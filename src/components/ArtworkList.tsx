@@ -109,7 +109,7 @@ function ArtworkRow({ artwork, indices }: { artwork: Artwork; indices: number[] 
         </div>
         <div>
           <div className="text-[var(--ink-muted)]">Medium</div>
-          <div className="text-[var(--ink-muted)]">{artwork.medium}</div>
+          <div>{artwork.medium}</div>
         </div>
         <div>
           <div className="text-[var(--ink-muted)]">Status</div>

@@ -1,7 +1,7 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import type { ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import type { ReactNode, TouchEvent as ReactTouchEvent } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 
@@ -46,6 +46,29 @@ export function LightboxProvider({ items, children }: { items: LightboxItem[]; c
   )
   const open = useCallback((i: number) => setIndex(i), [])
 
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+
+  const onTouchStart = useCallback((e: ReactTouchEvent) => {
+    const t = e.touches[0]
+    touchStart.current = { x: t.clientX, y: t.clientY }
+  }, [])
+
+  const onTouchEnd = useCallback(
+    (e: ReactTouchEvent) => {
+      const start = touchStart.current
+      touchStart.current = null
+      if (!start) return
+      const t = e.changedTouches[0]
+      const dx = t.clientX - start.x
+      const dy = t.clientY - start.y
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0) prev()
+        else next()
+      }
+    },
+    [prev, next]
+  )
+
   useEffect(() => {
     if (index === null) return
     function onKeyDown(e: KeyboardEvent) {
@@ -68,6 +91,8 @@ export function LightboxProvider({ items, children }: { items: LightboxItem[]; c
               role="dialog"
               aria-modal="true"
               onClick={close}
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
               className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10"
               style={{
                 background: 'color-mix(in srgb, var(--bg) 85%, transparent)',
