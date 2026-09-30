@@ -1,12 +1,16 @@
 import { client } from './client'
 import type { SanityImageSource } from '@sanity/image-url'
 
+export type ArtworkImage = {
+  image: SanityImageSource
+  aspectRatio: number | null
+}
+
 export type Artwork = {
   _id: string
   title: string
   slug: string
-  image: SanityImageSource
-  imageAspectRatio: number | null
+  images: ArtworkImage[]
   edition?: string
   year?: string
   dimensions?: string
@@ -37,8 +41,8 @@ export type SiteSettings = {
 }
 
 const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc){
-  _id, title, "slug": slug.current, image,
-  "imageAspectRatio": image.asset->metadata.dimensions.aspectRatio,
+  _id, title, "slug": slug.current,
+  "images": images[]{ "image": @, "aspectRatio": asset->metadata.dimensions.aspectRatio },
   edition, year, dimensions, medium, status, order
 }`
 

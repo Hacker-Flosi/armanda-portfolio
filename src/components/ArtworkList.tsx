@@ -45,17 +45,23 @@ function ArtworkRow({
 
       {isOpen && (
         <div>
-          {artwork.image ? (
-            <div className="relative w-full" style={{ aspectRatio: artwork.imageAspectRatio ?? 1.3 }}>
-              <Image
-                src={urlFor(artwork.image).width(1800).fit('max').auto('format').url()}
-                alt={artwork.title}
-                fill
-                sizes="100vw"
-                className="object-contain object-left"
-                priority={false}
-              />
-            </div>
+          {artwork.images && artwork.images.length > 0 ? (
+            artwork.images.map((entry, i) => (
+              <div
+                key={i}
+                className="relative w-full mb-1 last:mb-0"
+                style={{ aspectRatio: entry.aspectRatio ?? 1.3 }}
+              >
+                <Image
+                  src={urlFor(entry.image).width(1800).fit('max').auto('format').url()}
+                  alt={artwork.title}
+                  fill
+                  sizes="100vw"
+                  className="object-contain object-left"
+                  priority={false}
+                />
+              </div>
+            ))
           ) : (
             <div className="w-full aspect-[4/3] flex items-center justify-center text-xs text-[var(--ink-muted)] bg-black/[0.03]">
               Bild folgt

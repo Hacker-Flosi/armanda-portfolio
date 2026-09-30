@@ -19,11 +19,11 @@ export const artwork = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'image',
-      title: 'Bild',
-      type: 'image',
-      options: { hotspot: true },
-      validation: (rule) => rule.required(),
+      name: 'images',
+      title: 'Bilder',
+      type: 'array',
+      of: [{ type: 'image', options: { hotspot: true } }],
+      validation: (rule) => rule.required().min(1),
     }),
     defineField({
       name: 'edition',
@@ -77,6 +77,6 @@ export const artwork = defineType({
     },
   ],
   preview: {
-    select: { title: 'title', subtitle: 'year', media: 'image' },
+    select: { title: 'title', subtitle: 'year', media: 'images.0' },
   },
 })
