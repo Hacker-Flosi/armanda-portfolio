@@ -48,20 +48,43 @@ function ArtworkImages({ artwork, indices }: { artwork: Artwork; indices: number
     )
   }
 
+  const coverPos = artwork.images.findIndex((entry) => entry.isMobileCover)
+  const cover = artwork.images[coverPos === -1 ? 0 : coverPos]
+  const coverIndex = indices[coverPos === -1 ? 0 : coverPos]
+
   return (
-    <div className="grid grid-cols-2 gap-0.5 aspect-[16/10] max-h-[88dvh]">
-      {artwork.images.slice(0, 2).map((entry, i) => (
-        <ParallaxReveal key={i} className="relative h-full w-full overflow-hidden">
+    <>
+      {/* Mobil: nur das ausgewählte Titelbild, restliche Bilder bleiben über die Lightbox erreichbar */}
+      <div className="sm:hidden">
+        <ParallaxReveal
+          className="relative w-full mx-auto max-h-[88dvh] overflow-hidden"
+          style={{ aspectRatio: cover.aspectRatio ?? 1.3 }}
+        >
           <LightboxTrigger
-            index={indices[i]}
-            src={urlFor(entry.image).width(1200).fit('max').auto('format').url()}
+            index={coverIndex}
+            src={urlFor(cover.image).width(1800).fit('max').auto('format').url()}
             alt={artwork.title}
-            sizes="50vw"
-            className="object-cover"
+            sizes="100vw"
+            className="object-contain object-left"
           />
         </ParallaxReveal>
-      ))}
-    </div>
+      </div>
+
+      {/* Ab Tablet aufwärts: beide Bilder nebeneinander */}
+      <div className="hidden sm:grid grid-cols-2 gap-0.5 aspect-[16/10] max-h-[88dvh]">
+        {artwork.images.slice(0, 2).map((entry, i) => (
+          <ParallaxReveal key={i} className="relative h-full w-full overflow-hidden">
+            <LightboxTrigger
+              index={indices[i]}
+              src={urlFor(entry.image).width(1200).fit('max').auto('format').url()}
+              alt={artwork.title}
+              sizes="50vw"
+              className="object-cover"
+            />
+          </ParallaxReveal>
+        ))}
+      </div>
+    </>
   )
 }
 

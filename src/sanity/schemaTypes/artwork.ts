@@ -22,7 +22,36 @@ export const artwork = defineType({
       name: 'images',
       title: 'Bilder',
       type: 'array',
-      of: [{ type: 'image', options: { hotspot: true } }],
+      of: [
+        {
+          type: 'object',
+          name: 'artworkImage',
+          fields: [
+            defineField({
+              name: 'image',
+              title: 'Bild',
+              type: 'image',
+              options: { hotspot: true },
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'isMobileCover',
+              title: 'Mobil-Titelbild',
+              type: 'boolean',
+              description:
+                'Auf dem Handy wird pro Werk nur ein Bild in der Übersicht gezeigt. Dieses hier markieren, damit es das ist — die übrigen Bilder bleiben trotzdem im Lightbox-Vollbild abrufbar.',
+              initialValue: false,
+            }),
+          ],
+          preview: {
+            select: { media: 'image', isMobileCover: 'isMobileCover' },
+            prepare: ({ media, isMobileCover }) => ({
+              title: isMobileCover ? 'Mobil-Titelbild' : 'Bild',
+              media,
+            }),
+          },
+        },
+      ],
       validation: (rule) => rule.required().min(1),
     }),
     defineField({
@@ -77,6 +106,6 @@ export const artwork = defineType({
     },
   ],
   preview: {
-    select: { title: 'title', subtitle: 'year', media: 'images.0' },
+    select: { title: 'title', subtitle: 'year', media: 'images.0.image' },
   },
 })

@@ -2,6 +2,8 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { getSiteSettings } from '@/sanity/lib/queries'
 
+export const revalidate = 60
+
 export default async function ImpressumPage() {
   const settings = await getSiteSettings()
   const credits = settings?.impressumCredits ?? []

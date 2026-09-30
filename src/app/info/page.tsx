@@ -4,6 +4,8 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { getAbout } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 
+export const revalidate = 60
+
 export default async function InfoPage() {
   const about = await getAbout()
 
@@ -34,7 +36,7 @@ export default async function InfoPage() {
                 {about.exhibitions.map((exhibition, i) => (
                   <div
                     key={i}
-                    className="grid grid-cols-4 gap-2 px-3 py-1.5 text-xs border-t border-[var(--line)]"
+                    className="grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-2 px-3 py-2 sm:py-1.5 text-xs border-t border-[var(--line)]"
                   >
                     <span>{exhibition.year}</span>
                     <span className="text-[var(--ink-muted)]">{exhibition.type}</span>

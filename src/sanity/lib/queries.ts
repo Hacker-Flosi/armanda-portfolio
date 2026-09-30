@@ -4,6 +4,7 @@ import type { SanityImageSource } from '@sanity/image-url'
 export type ArtworkImage = {
   image: SanityImageSource
   aspectRatio: number | null
+  isMobileCover: boolean
 }
 
 export type Artwork = {
@@ -42,7 +43,7 @@ export type SiteSettings = {
 
 const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc){
   _id, title, "slug": slug.current,
-  "images": images[]{ "image": @, "aspectRatio": asset->metadata.dimensions.aspectRatio },
+  "images": images[]{ image, isMobileCover, "aspectRatio": image.asset->metadata.dimensions.aspectRatio },
   edition, year, dimensions, medium, status, order
 }`
 
