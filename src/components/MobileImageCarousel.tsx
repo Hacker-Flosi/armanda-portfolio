@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useLightbox } from '@/components/Lightbox'
+import { ParallaxReveal } from '@/components/ParallaxReveal'
 
 const INTERVAL_MS = 4500
 
@@ -27,6 +28,11 @@ export function MobileImageCarousel({
   const [reduceMotion, setReduceMotion] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Fest auf das Start-Bild verankert, damit der Container beim Durchwechseln
+  // nicht je nach Seitenverhältnis des aktuellen Bilds springt — andere
+  // Formate werden stattdessen innerhalb der festen Box eingepasst.
+  const boxAspectRatio = images[startAt]?.aspectRatio ?? 1.3
+
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   }, [])
@@ -50,22 +56,28 @@ export function MobileImageCarousel({
   }, [advancing, images.length])
 
   const current = images[index]
+  const style = useMemo(
+    () => ({ aspectRatio: boxAspectRatio, viewTransitionName }),
+    [boxAspectRatio, viewTransitionName]
+  )
   if (!current) return null
 
   return (
     <div
       ref={containerRef}
       className="sm:hidden relative w-full mx-auto max-h-[88dvh] overflow-hidden"
-      style={{ aspectRatio: current.aspectRatio ?? 1.3, viewTransitionName }}
+      style={style}
     >
-      <button
-        type="button"
-        onClick={() => open(globalIndices[index])}
-        aria-label={`${alt} — Bild vergrössern`}
-        className="absolute inset-0 w-full h-full cursor-zoom-in"
-      >
-        <Image src={current.src} alt={alt} fill sizes="100vw" className="object-contain object-left" />
-      </button>
+      <ParallaxReveal className="absolute inset-0">
+        <button
+          type="button"
+          onClick={() => open(globalIndices[index])}
+          aria-label={`${alt} — Bild vergrössern`}
+          className="absolute inset-0 w-full h-full cursor-zoom-in"
+        >
+          <Image src={current.src} alt={alt} fill sizes="100vw" className="object-contain object-left" />
+        </button>
+      </ParallaxReveal>
 
       {images.length > 1 && (
         <div className="absolute top-2 inset-x-2 flex gap-1 pointer-events-none">
