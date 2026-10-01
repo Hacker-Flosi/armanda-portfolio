@@ -7,57 +7,66 @@ import { navigateWithFanTransition } from '@/lib/viewTransition'
 
 export type FanWork = { id: string; src: string; alt: string }
 
-// Wie weit man am unteren Rand noch weiterziehen muss, bis der Fächer ganz
-// gespannt ist und man zu den Werken geht.
-const DRAG_THRESHOLD = 110
+// Wie weit man nach dem vollen Aufgefächert-sein noch weiterziehen muss,
+// bis es zu den Werken geht.
+const CONFIRM_THRESHOLD = 55
 
 export function WorksFan({ works }: { works: FanWork[] }) {
   const router = useRouter()
-  const [atBottom, setAtBottom] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [progress, setProgress] = useState(0)
   const [tensioned, setTensioned] = useState(false)
 
-  const atBottomRef = useRef(false)
+  const atFullRef = useRef(false)
   const dragStartY = useRef<number | null>(null)
   const navigatingRef = useRef(false)
 
   useEffect(() => {
-    function checkAtBottom() {
-      const bottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
-      atBottomRef.current = bottom
-      setAtBottom(bottom)
+    const el = containerRef.current
+    if (!el) return
+
+    // Der Fächer öffnet sich mit dem normalen Scrollen: sobald die Box von
+    // unten in den Viewport wandert, geht er proportional dazu auf — er
+    // erscheint also erst am Ende der Seite, kein fixiertes Overlay.
+    function updateScrollProgress() {
+      const rect = el!.getBoundingClientRect()
+      const vh = window.innerHeight || 1
+      const p = Math.max(0, Math.min(1, (vh - rect.top) / rect.height))
+      atFullRef.current = p >= 1
+      setProgress(p)
     }
-    checkAtBottom()
-    window.addEventListener('scroll', checkAtBottom, { passive: true })
-    window.addEventListener('resize', checkAtBottom)
+
+    updateScrollProgress()
+    window.addEventListener('scroll', updateScrollProgress, { passive: true })
+    window.addEventListener('resize', updateScrollProgress)
 
     function onTouchStart(e: TouchEvent) {
-      // Nur scharf, wenn die Geste bereits am unteren Rand STARTET — ein
-      // normaler Scroll bis ganz nach unten löst dadurch nie versehentlich aus.
-      if (!atBottomRef.current) return
+      // Nur scharf, wenn der Fächer bereits voll offen ist (= man ist am
+      // Ende der Seite angekommen) — das normale Scrollen dorthin öffnet
+      // ihn nur, löst aber nie von selbst die Navigation aus.
+      if (!atFullRef.current) return
       dragStartY.current = e.touches[0].clientY
     }
 
     function onTouchMove(e: TouchEvent) {
       if (dragStartY.current === null) return
-      if (!atBottomRef.current) {
+      if (!atFullRef.current) {
         dragStartY.current = null
-        setProgress(0)
+        setTensioned(false)
         return
       }
       const dy = dragStartY.current - e.touches[0].clientY
-      const p = Math.max(0, Math.min(1, dy / DRAG_THRESHOLD))
-      setProgress(p)
-      if (p >= 1 && !navigatingRef.current) {
+      const confirm = Math.max(0, Math.min(1, dy / CONFIRM_THRESHOLD))
+      setTensioned(confirm > 0.15)
+      if (confirm >= 1 && !navigatingRef.current) {
         navigatingRef.current = true
-        setTensioned(true)
         navigateWithFanTransition(router, '/')
       }
     }
 
     function onTouchEnd() {
       dragStartY.current = null
-      if (!navigatingRef.current) setProgress(0)
+      if (!navigatingRef.current) setTensioned(false)
     }
 
     window.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -65,8 +74,8 @@ export function WorksFan({ works }: { works: FanWork[] }) {
     window.addEventListener('touchend', onTouchEnd, { passive: true })
 
     return () => {
-      window.removeEventListener('scroll', checkAtBottom)
-      window.removeEventListener('resize', checkAtBottom)
+      window.removeEventListener('scroll', updateScrollProgress)
+      window.removeEventListener('resize', updateScrollProgress)
       window.removeEventListener('touchstart', onTouchStart)
       window.removeEventListener('touchmove', onTouchMove)
       window.removeEventListener('touchend', onTouchEnd)
@@ -78,14 +87,10 @@ export function WorksFan({ works }: { works: FanWork[] }) {
   const center = (works.length - 1) / 2
 
   return (
-    <div
-      aria-hidden
-      className="sm:hidden fixed inset-x-0 bottom-9 z-10 flex justify-center pointer-events-none"
-      style={{ height: 1 }}
-    >
+    <div ref={containerRef} aria-hidden className="sm:hidden relative h-72 w-full pointer-events-none">
       <div
         className={tensioned ? 'fan-tension' : undefined}
-        style={{ position: 'relative', width: 0, height: 0 }}
+        style={{ position: 'absolute', left: '50%', bottom: 0, width: 0, height: 0 }}
       >
         {works.map((work, i) => {
           const offset = i - center
@@ -103,7 +108,6 @@ export function WorksFan({ works }: { works: FanWork[] }) {
                 viewTransitionName: `fan-work-${work.id}`,
                 transform: `translateX(-50%) translateX(${offset * 3}px) rotate(${angle}deg) translateY(${-lift}px) scale(${scale})`,
                 opacity,
-                transition: dragStartY.current ? 'none' : 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease',
               }}
             >
               <Image src={work.src} alt={work.alt} fill sizes="64px" className="object-cover" />

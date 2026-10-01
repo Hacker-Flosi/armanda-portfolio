@@ -71,10 +71,11 @@ export default async function InfoPage() {
               </div>
             </div>
           )}
+
+          <WorksFan works={fanWorks} />
         </div>
       </main>
       <SiteFooter />
-      <WorksFan works={fanWorks} />
     </>
   )
 }
