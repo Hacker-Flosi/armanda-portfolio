@@ -26,7 +26,11 @@ export const DRAG_THRESHOLD = 170
 
 const MIN_IMPULSE = 12 // kleinere Ankünfte am Rand werden ignoriert
 const MAX_IMPULSE = 260
-const VELOCITY_SCALE = 9 // px Fächer-Ausschlag pro px/Frame Scroll-Geschwindigkeit
+// px Fächer-Ausschlag pro px/Frame Scroll-Geschwindigkeit. Niedrig gehalten,
+// damit ein normaler, auch zügiger Scroll bis ganz nach unten nur einen
+// Ausschlag (Bounce) gibt — erst ein wirklich harter Flick (~45+ px/Frame)
+// erreicht die Schwelle und verlässt die Seite direkt.
+const VELOCITY_SCALE = 3.5
 const IMPULSE_HOLD_MS = 220 // wie lange der Ausschlag sichtbar bleibt, bevor er zurückfedert
 // Sprünge über diese Grösse sind kein echtes Scrollen (Seitenwechsel,
 // Scroll-Restoration, Resize) und werden ignoriert, statt als extrem
