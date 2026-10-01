@@ -38,7 +38,26 @@ export type SiteSettings = {
   mailSubject?: string
   instagramUrl?: string
   printsUrl?: string
+  designUrl?: string
   impressumCredits?: { role?: string; name?: string }[]
+}
+
+export type DesignImage = {
+  image: SanityImageSource
+  aspectRatio: number | null
+  isMobileCover: boolean
+}
+
+export type DesignWork = {
+  _id: string
+  title: string
+  slug: string
+  images: DesignImage[]
+  client?: string
+  category?: string
+  year?: string
+  description?: string
+  order: number
 }
 
 const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc){
@@ -50,7 +69,13 @@ const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc){
 const aboutQuery = /* groq */ `*[_type == "about"][0]{ photo, bio, exhibitions }`
 
 const siteSettingsQuery = /* groq */ `*[_type == "siteSettings"][0]{
-  mailAddress, mailSubject, instagramUrl, printsUrl, impressumCredits
+  mailAddress, mailSubject, instagramUrl, printsUrl, designUrl, impressumCredits
+}`
+
+const designWorksQuery = /* groq */ `*[_type == "designWork"] | order(order asc){
+  _id, title, "slug": slug.current,
+  "images": images[]{ image, isMobileCover, "aspectRatio": image.asset->metadata.dimensions.aspectRatio },
+  client, category, year, description, order
 }`
 
 export async function getArtworks(): Promise<Artwork[]> {
@@ -63,4 +88,8 @@ export async function getAbout(): Promise<About | null> {
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
   return client.fetch(siteSettingsQuery)
+}
+
+export async function getDesignWorks(): Promise<DesignWork[]> {
+  return client.fetch(designWorksQuery)
 }

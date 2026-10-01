@@ -10,6 +10,13 @@ export const siteSettings = defineType({
     defineField({ name: 'instagramUrl', title: 'Instagram-URL', type: 'url' }),
     defineField({ name: 'printsUrl', title: 'Prints-URL (extern)', type: 'url' }),
     defineField({
+      name: 'designUrl',
+      title: 'Grafikdesign-Portfolio-URL',
+      type: 'url',
+      description:
+        'Link im Impressum zum Grafikdesign-Portfolio (Subdomain). Leer lassen, bis die Subdomain live ist.',
+    }),
+    defineField({
       name: 'impressumCredits',
       title: 'Impressum / Credits',
       type: 'array',
