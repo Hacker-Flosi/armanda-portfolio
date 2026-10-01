@@ -32,7 +32,7 @@ export default async function InfoPage() {
       <SiteHeader />
       <main className="flex-1 flex flex-col md:grid md:grid-cols-[2fr_3fr]">
         <ParallaxReveal
-          className="relative w-full min-h-[280px] md:h-full md:min-h-0 overflow-hidden"
+          className="relative w-full min-h-[60dvh] md:h-full md:min-h-0 overflow-hidden"
           style={{ viewTransitionName: 'fan-info-photo' }}
         >
           {about?.photo && (
