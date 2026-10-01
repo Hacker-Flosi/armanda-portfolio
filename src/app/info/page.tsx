@@ -29,8 +29,8 @@ export default async function InfoPage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-[2fr_3fr]">
-        <ParallaxReveal className="relative w-full h-full min-h-[280px] md:min-h-0 overflow-hidden">
+      <main className="flex-1 flex flex-col md:grid md:grid-cols-[2fr_3fr]">
+        <ParallaxReveal className="relative w-full min-h-[280px] md:h-full md:min-h-0 overflow-hidden">
           {about?.photo && (
             <Image
               src={urlFor(about.photo).width(1200).auto('format').url()}
@@ -41,7 +41,7 @@ export default async function InfoPage() {
             />
           )}
         </ParallaxReveal>
-        <div className="px-3 pt-6 pb-4 flex flex-col gap-6 min-h-[calc(100vh-72px)] md:min-h-0">
+        <div className="px-3 pt-6 pb-4 flex flex-col gap-6 flex-1">
           <p className="whitespace-pre-line text-lg leading-relaxed">{about?.bio}</p>
 
           {about?.exhibitions && about.exhibitions.length > 0 && (

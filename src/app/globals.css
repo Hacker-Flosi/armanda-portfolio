@@ -75,6 +75,25 @@ a {
   }
 }
 
+.fan-hint {
+  animation: fan-hint-bounce 2.4s ease-in-out infinite;
+}
+
+@keyframes fan-hint-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fan-hint {
+    animation: none;
+  }
+}
+
 ::view-transition-group(*) {
   animation-duration: 0.5s;
   animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);

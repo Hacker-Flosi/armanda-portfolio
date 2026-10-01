@@ -84,7 +84,12 @@ function ensureInit() {
     if (!navigated) setState({ pull: 0, tensioned: false, dragging: false })
   }
 
+  // iOS übergibt eine Geste oft an die native Scroll-/Rubber-Band-Physik und
+  // feuert dann 'touchcancel' statt 'touchend' — ohne diesen Handler blieb
+  // der Zustand für immer auf "dragging" eingefroren und der Fächer federte
+  // nie zurück.
   window.addEventListener('touchstart', onTouchStart, { passive: true })
   window.addEventListener('touchmove', onTouchMove, { passive: true })
   window.addEventListener('touchend', onTouchEnd, { passive: true })
+  window.addEventListener('touchcancel', onTouchEnd, { passive: true })
 }

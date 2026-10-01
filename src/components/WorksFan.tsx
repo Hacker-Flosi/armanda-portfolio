@@ -21,6 +21,10 @@ export function WorksFan({ works }: { works: FanWork[] }) {
     getBottomPullState
   )
   const progress = Math.min(1, pull / DRAG_THRESHOLD)
+  // Leichte Ease-out-Kurve statt 1:1-Linear, damit das Aufziehen elastisch
+  // statt mechanisch wirkt.
+  const eased = 1 - (1 - progress) * (1 - progress)
+  const showHint = pull === 0 && !dragging
 
   useEffect(() => {
     setBottomPullNavigate(() => navigateWithFanTransition(router, '/'))
@@ -32,18 +36,21 @@ export function WorksFan({ works }: { works: FanWork[] }) {
   const center = (works.length - 1) / 2
 
   return (
-    <div aria-hidden className="sm:hidden relative h-48 pointer-events-none">
+    <div
+      aria-hidden
+      className={`sm:hidden relative h-48 pointer-events-none ${showHint ? 'fan-hint' : ''}`}
+    >
       <div
         className={tensioned ? 'fan-tension' : undefined}
         style={{ position: 'absolute', left: '50%', bottom: 0, width: 0, height: 0 }}
       >
         {works.map((work, i) => {
           const offset = i - center
-          const angle = offset * 15 * progress
-          const lift = progress * 230
-          const scale = 0.88 + 0.12 * progress
+          const angle = offset * 15 * eased
+          const lift = eased * 230
+          const scale = 0.88 + 0.12 * eased
           const closedOpacity = 0.7 + 0.1 * Math.max(0, 1 - Math.abs(offset) * 0.3)
-          const opacity = closedOpacity + (1 - closedOpacity) * progress
+          const opacity = closedOpacity + (1 - closedOpacity) * eased
 
           return (
             <div
