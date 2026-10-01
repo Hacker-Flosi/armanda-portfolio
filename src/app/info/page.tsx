@@ -5,6 +5,7 @@ import { getAbout, getArtworks } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
 import { WorksFan, type FanWork } from '@/components/WorksFan'
+import { ResolveFanTransition } from '@/components/ResolveFanTransition'
 
 export const revalidate = 60
 
@@ -30,7 +31,10 @@ export default async function InfoPage() {
     <>
       <SiteHeader />
       <main className="flex-1 flex flex-col md:grid md:grid-cols-[2fr_3fr]">
-        <ParallaxReveal className="relative w-full min-h-[280px] md:h-full md:min-h-0 overflow-hidden">
+        <ParallaxReveal
+          className="relative w-full min-h-[280px] md:h-full md:min-h-0 overflow-hidden"
+          style={{ viewTransitionName: 'fan-info-photo' }}
+        >
           {about?.photo && (
             <Image
               src={urlFor(about.photo).width(1200).auto('format').url()}
@@ -78,6 +82,7 @@ export default async function InfoPage() {
         </div>
       </main>
       <SiteFooter />
+      <ResolveFanTransition />
     </>
   )
 }
