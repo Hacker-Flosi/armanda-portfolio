@@ -8,10 +8,9 @@ import { navigateWithFanTransition } from '@/lib/viewTransition'
 
 export type FanWork = { id: string; src: string; alt: string }
 
-// Wie viel vom geschlossenen Stapel unten dauerhaft "angeschnitten" bleibt —
-// eine Maske in Seitenfarbe deckt diesen Streifen ab, statt die Karten mit
-// overflow zu clippen (so bleibt beim Aufziehen oben alles unbeschnitten).
-const MASK_HEIGHT = 64
+// Zieht den Fächer unter den (deckenden, höher gestapelten) Footer, damit er
+// dort real angeschnitten wird statt mit einer künstlichen Maske simuliert.
+const FOOTER_OVERLAP = 52
 
 export function WorksFan({ works }: { works: FanWork[] }) {
   const router = useRouter()
@@ -39,6 +38,7 @@ export function WorksFan({ works }: { works: FanWork[] }) {
     <div
       aria-hidden
       className={`sm:hidden relative h-48 pointer-events-none ${showHint ? 'fan-hint' : ''}`}
+      style={{ marginBottom: -FOOTER_OVERLAP }}
     >
       <div
         className={tensioned ? 'fan-tension' : undefined}
@@ -70,10 +70,6 @@ export function WorksFan({ works }: { works: FanWork[] }) {
           )
         })}
       </div>
-      {/* Deckt den unteren Streifen der Karten (inkl. ihrem Schlagschatten)
-          permanent ab, damit der Fächer immer "angeschnitten" wirkt, ohne
-          das Aufklappen nach oben zu clippen. */}
-      <div className="absolute inset-x-0 bg-[var(--bg)]" style={{ bottom: -16, height: MASK_HEIGHT + 16 }} />
     </div>
   )
 }
