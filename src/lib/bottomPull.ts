@@ -1,11 +1,20 @@
 // Gemeinsamer Zustand für die "Zieh dich zu den Werken"-Geste am Ende der
-// Info-Seite. Ein einziger Satz window-Listener (lazy initialisiert bei der
-// ersten Subscription) verfolgt den Finger durchgehend: solange normal
-// gescrollt werden kann, passiert nichts; sobald der Rand erreicht ist,
-// fliesst jede weitere Fingerbewegung direkt in die "pull"-Distanz, die den
-// Fächer öffnet — ganz ohne eine neue Geste beginnen zu müssen. Lässt man
-// vor der Schwelle los, federt der Fächer (über CSS-Transition in den
-// Lesern) einfach zurück; das ist der gewünschte "Bounce".
+// Info-Seite.
+//
+// Zwei Wege führen zum selben "pull"-Wert, der den Fächer öffnet:
+//
+// 1) Aktives Ziehen: Sobald normal nicht mehr weiter gescrollt werden kann,
+//    fliesst jede weitere Fingerbewegung (touchmove) direkt in "pull" —
+//    ganz ohne eine neue Geste beginnen zu müssen.
+// 2) Schwung/Momentum: Scrollt man schnell und schiesst über das Ende
+//    hinaus (native Momentum-/Rubber-Band-Physik, Finger meist schon oben),
+//    misst eine rAF-Schleife die Geschwindigkeit, mit der der untere Rand
+//    erreicht wird, und übersetzt sie direkt in einen Fächer-Ausschlag:
+//    leichter Schwung → kurzer Ausschlag, der zurückfedert; starker
+//    Schwung → reicht bis zur Schwelle und löst die Transition direkt aus.
+//
+// Beide Wege schliessen sich gegenseitig aus (der Momentum-Pfad greift nur,
+// wenn gerade kein Finger aktiv auf dem Bildschirm ist).
 
 export type BottomPullState = {
   pull: number // wie weit über den unteren Rand hinaus gezogen wurde (px)
@@ -15,10 +24,22 @@ export type BottomPullState = {
 
 export const DRAG_THRESHOLD = 170
 
+const MIN_IMPULSE = 12 // kleinere Ankünfte am Rand werden ignoriert
+const MAX_IMPULSE = 260
+const VELOCITY_SCALE = 9 // px Fächer-Ausschlag pro px/Frame Scroll-Geschwindigkeit
+const IMPULSE_HOLD_MS = 220 // wie lange der Ausschlag sichtbar bleibt, bevor er zurückfedert
+// Sprünge über diese Grösse sind kein echtes Scrollen (Seitenwechsel,
+// Scroll-Restoration, Resize) und werden ignoriert, statt als extrem
+// schneller Schwung gewertet zu werden.
+const MAX_PLAUSIBLE_FRAME_DELTA = 120
+
 let state: BottomPullState = { pull: 0, tensioned: false, dragging: false }
 const listeners = new Set<() => void>()
 let initialized = false
 let navigateCallback: (() => void) | null = null
+let navigated = false
+let lastTouchY: number | null = null
+let rafRunning = false
 
 function emit() {
   for (const listener of listeners) listener()
@@ -36,6 +57,7 @@ export function getBottomPullState() {
 export function subscribeBottomPull(listener: () => void) {
   listeners.add(listener)
   ensureInit()
+  startVelocityLoop()
   return () => listeners.delete(listener)
 }
 
@@ -43,16 +65,19 @@ export function setBottomPullNavigate(cb: (() => void) | null) {
   navigateCallback = cb
 }
 
+function checkAtBottom() {
+  return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
+}
+
+function triggerNavigate() {
+  if (navigated) return
+  navigated = true
+  navigateCallback?.()
+}
+
 function ensureInit() {
   if (initialized || typeof window === 'undefined') return
   initialized = true
-
-  let lastTouchY: number | null = null
-  let navigated = false
-
-  function checkAtBottom() {
-    return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
-  }
 
   function onTouchStart(e: TouchEvent) {
     lastTouchY = e.touches[0].clientY
@@ -73,10 +98,7 @@ function ensureInit() {
     const tensioned = pull / DRAG_THRESHOLD > 0.85
     setState({ pull, tensioned, dragging: true })
 
-    if (pull >= DRAG_THRESHOLD && !navigated) {
-      navigated = true
-      navigateCallback?.()
-    }
+    if (pull >= DRAG_THRESHOLD) triggerNavigate()
   }
 
   function onTouchEnd() {
@@ -92,4 +114,50 @@ function ensureInit() {
   window.addEventListener('touchmove', onTouchMove, { passive: true })
   window.addEventListener('touchend', onTouchEnd, { passive: true })
   window.addEventListener('touchcancel', onTouchEnd, { passive: true })
+}
+
+let lastScrollY = 0
+let lastAtBottom = false
+
+function velocityFrame() {
+  if (listeners.size === 0) {
+    rafRunning = false
+    return
+  }
+
+  const y = window.scrollY
+  const velocity = y - lastScrollY // px seit dem letzten Frame, positiv = Richtung Seitenende
+  const bottom = checkAtBottom()
+
+  if (bottom && !lastAtBottom && lastTouchY === null && !navigated && velocity <= MAX_PLAUSIBLE_FRAME_DELTA) {
+    const impulse = Math.min(MAX_IMPULSE, Math.max(0, velocity) * VELOCITY_SCALE)
+    if (impulse >= MIN_IMPULSE) {
+      const tensioned = impulse / DRAG_THRESHOLD > 0.85
+      setState({ pull: impulse, tensioned, dragging: false })
+
+      if (impulse >= DRAG_THRESHOLD) {
+        triggerNavigate()
+      } else {
+        setTimeout(() => {
+          // Nicht zurücksetzen, falls der Nutzer in der Zwischenzeit selbst
+          // zu ziehen begonnen hat.
+          if (!navigated && lastTouchY === null) {
+            setState({ pull: 0, tensioned: false, dragging: false })
+          }
+        }, IMPULSE_HOLD_MS)
+      }
+    }
+  }
+
+  lastAtBottom = bottom
+  lastScrollY = y
+  requestAnimationFrame(velocityFrame)
+}
+
+function startVelocityLoop() {
+  if (rafRunning || typeof window === 'undefined') return
+  rafRunning = true
+  lastScrollY = window.scrollY
+  lastAtBottom = checkAtBottom()
+  requestAnimationFrame(velocityFrame)
 }
