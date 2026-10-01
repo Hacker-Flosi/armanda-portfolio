@@ -3,7 +3,13 @@
 import Image from 'next/image'
 import { useEffect, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
-import { DRAG_THRESHOLD, getBottomPullState, setBottomPullNavigate, subscribeBottomPull } from '@/lib/bottomPull'
+import {
+  DRAG_THRESHOLD,
+  getBottomPullState,
+  resetBottomPull,
+  setBottomPullNavigate,
+  subscribeBottomPull,
+} from '@/lib/bottomPull'
 import { navigateWithFanTransition } from '@/lib/viewTransition'
 
 export type FanWork = { id: string; src: string; alt: string }
@@ -26,6 +32,7 @@ export function WorksFan({ works }: { works: FanWork[] }) {
   const showHint = pull === 0 && !dragging
 
   useEffect(() => {
+    resetBottomPull()
     setBottomPullNavigate(() => navigateWithFanTransition(router, '/'))
     return () => setBottomPullNavigate(null)
   }, [router])

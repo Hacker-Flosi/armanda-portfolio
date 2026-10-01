@@ -61,6 +61,18 @@ export function subscribeBottomPull(listener: () => void) {
   return () => listeners.delete(listener)
 }
 
+// Wird beim Mounten der Fächer-Seite aufgerufen: setzt die Geste scharf,
+// falls man schon einmal erfolgreich zu den Werken navigiert ist und jetzt
+// (z.B. über "Zurück") wieder auf der Info-Seite landet. Ohne das bliebe
+// "navigated" für immer true, da das Modul bei einer Client-Navigation
+// nicht neu geladen wird — jeder weitere Versuch hätte dann einfach nichts
+// mehr getan.
+export function resetBottomPull() {
+  navigated = false
+  lastTouchY = null
+  setState({ pull: 0, tensioned: false, dragging: false })
+}
+
 export function setBottomPullNavigate(cb: (() => void) | null) {
   navigateCallback = cb
 }
