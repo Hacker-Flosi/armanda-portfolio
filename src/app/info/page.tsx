@@ -4,6 +4,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { getAbout } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
+import { ContinueToWorksHint } from '@/components/ContinueToWorksHint'
 
 export const revalidate = 60
 
@@ -25,12 +26,12 @@ export default async function InfoPage() {
             />
           )}
         </ParallaxReveal>
-        <div className="px-2 pt-6 pb-4 flex flex-col gap-6">
-          <p className="whitespace-pre-line text-base leading-relaxed px-2">{about?.bio}</p>
+        <div className="px-3 pt-6 pb-4 flex flex-col gap-6">
+          <p className="whitespace-pre-line text-lg leading-relaxed">{about?.bio}</p>
 
           {about?.exhibitions && about.exhibitions.length > 0 && (
             <div>
-              <div className="bg-[var(--bar-bg)] text-[var(--bar-fg)] px-1.5 py-1 text-sm ml-1">
+              <div className="bg-[var(--bar-bg)] text-[var(--bar-fg)] px-2 py-1 text-base">
                 Ausstellungen
               </div>
               <div>
@@ -41,7 +42,7 @@ export default async function InfoPage() {
                   return (
                     <div
                       key={i}
-                      className="flex flex-wrap items-center gap-1.5 py-1.5 text-sm border-t border-[var(--line)]"
+                      className="flex flex-wrap items-center gap-1.5 py-1.5 text-base border-t border-[var(--line)]"
                     >
                       {fields.map((field, j) => (
                         <span key={j} className="flex items-center gap-1.5">
@@ -58,6 +59,7 @@ export default async function InfoPage() {
         </div>
       </main>
       <SiteFooter />
+      <ContinueToWorksHint />
     </>
   )
 }

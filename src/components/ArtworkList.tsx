@@ -24,7 +24,7 @@ function StatusCell({ status }: { status?: Artwork['status'] }) {
 function ArtworkImages({ artwork, indices }: { artwork: Artwork; indices: number[] }) {
   if (!artwork.images || artwork.images.length === 0) {
     return (
-      <div className="w-full aspect-[4/3] flex items-center justify-center text-xs text-[var(--ink-muted)] bg-black/[0.03]">
+      <div className="w-full aspect-[4/3] flex items-center justify-center text-sm text-[var(--ink-muted)] bg-black/[0.03]">
         Bild folgt
       </div>
     )
@@ -93,12 +93,12 @@ function ArtworkRow({ artwork, indices }: { artwork: Artwork; indices: number[] 
     <div className="border-t border-[var(--line)] first:border-t-0">
       <div className="flex items-baseline justify-between px-4 py-3">
         <h2 className="font-medium">{artwork.title}</h2>
-        <span className="text-[var(--ink-muted)] text-xs">Edition {artwork.edition ?? '1/1'}</span>
+        <span className="text-[var(--ink-muted)] text-sm">Edition {artwork.edition ?? '1/1'}</span>
       </div>
 
       <ArtworkImages artwork={artwork} indices={indices} />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-2 gap-x-4 px-4 py-3 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-2 gap-x-4 px-4 py-3 text-sm">
         <div>
           <div className="text-[var(--ink-muted)]">Jahr</div>
           <div>{artwork.year}</div>

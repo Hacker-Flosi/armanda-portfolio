@@ -13,7 +13,7 @@ export default async function ImpressumPage() {
       <SiteHeader />
       <main className="flex-1 px-4 py-6">
         {credits.map((credit, i) => (
-          <p key={i} className="text-sm">
+          <p key={i} className="text-base">
             {credit.role}: {credit.name}
           </p>
         ))}

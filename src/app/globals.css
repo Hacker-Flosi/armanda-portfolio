@@ -24,7 +24,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.4;
 }
 
@@ -50,5 +50,24 @@ a {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+.hint-bounce {
+  animation: hint-bounce 1.6s ease-in-out infinite;
+}
+
+@keyframes hint-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint-bounce {
+    animation: none;
   }
 }
