@@ -5,6 +5,7 @@ import { getAbout, getArtworks } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
 import { WorksFan, type FanWork } from '@/components/WorksFan'
+import { InfoEndInteraction } from '@/components/InfoEndInteraction'
 
 export const revalidate = 60
 
@@ -29,7 +30,7 @@ export default async function InfoPage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-[2fr_3fr]">
+      <InfoEndInteraction className="flex-1 grid grid-cols-1 md:grid-cols-[2fr_3fr]">
         <ParallaxReveal className="relative w-full h-full min-h-[280px] md:min-h-0 overflow-hidden">
           {about?.photo && (
             <Image
@@ -74,7 +75,7 @@ export default async function InfoPage() {
 
           <WorksFan works={fanWorks} />
         </div>
-      </main>
+      </InfoEndInteraction>
       <SiteFooter />
     </>
   )
