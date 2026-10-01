@@ -115,3 +115,19 @@ a {
     width: 100%;
   }
 }
+
+.carousel-fade-in {
+  opacity: 0;
+  animation-name: carousel-fade-in;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes carousel-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

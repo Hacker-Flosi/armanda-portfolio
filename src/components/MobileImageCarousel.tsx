@@ -6,6 +6,7 @@ import { useLightbox } from '@/components/Lightbox'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
 
 const INTERVAL_MS = 4500
+const FADE_MS = 600
 
 export type CarouselImage = { src: string; aspectRatio: number | null }
 
@@ -23,10 +24,16 @@ export function MobileImageCarousel({
   viewTransitionName?: string
 }) {
   const { open } = useLightbox()
-  const [index, setIndex] = useState(startAt)
+  // "previous" bleibt kurz unter dem neuen Bild stehen, damit es weich
+  // überblendet statt hart umzuschalten.
+  const [slide, setSlide] = useState<{ current: number; previous: number | null }>({
+    current: startAt,
+    previous: null,
+  })
   const [inView, setInView] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const fadeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Fest auf das Start-Bild verankert, damit der Container beim Durchwechseln
   // nicht je nach Seitenverhältnis des aktuellen Bilds springt — andere
@@ -50,12 +57,22 @@ export function MobileImageCarousel({
   useEffect(() => {
     if (!advancing) return
     const timer = setInterval(() => {
-      setIndex((i) => (i + 1) % images.length)
+      setSlide((s) => ({ current: (s.current + 1) % images.length, previous: s.current }))
+      if (fadeTimeout.current) clearTimeout(fadeTimeout.current)
+      fadeTimeout.current = setTimeout(() => setSlide((s) => ({ ...s, previous: null })), FADE_MS)
     }, INTERVAL_MS)
     return () => clearInterval(timer)
   }, [advancing, images.length])
 
+  useEffect(() => {
+    return () => {
+      if (fadeTimeout.current) clearTimeout(fadeTimeout.current)
+    }
+  }, [])
+
+  const { current: index, previous: previousIndex } = slide
   const current = images[index]
+  const previous = previousIndex !== null ? images[previousIndex] : null
   const style = useMemo(
     () => ({ aspectRatio: boxAspectRatio, viewTransitionName }),
     [boxAspectRatio, viewTransitionName]
@@ -63,11 +80,7 @@ export function MobileImageCarousel({
   if (!current) return null
 
   return (
-    <div
-      ref={containerRef}
-      className="sm:hidden relative w-full mx-auto max-h-[88dvh] overflow-hidden"
-      style={style}
-    >
+    <div ref={containerRef} className="sm:hidden relative w-full mx-auto max-h-[88dvh] overflow-hidden" style={style}>
       <ParallaxReveal className="absolute inset-0">
         <button
           type="button"
@@ -75,7 +88,18 @@ export function MobileImageCarousel({
           aria-label={`${alt} — Bild vergrössern`}
           className="absolute inset-0 w-full h-full cursor-zoom-in"
         >
-          <Image src={current.src} alt={alt} fill sizes="100vw" className="object-contain object-left" />
+          {previous && (
+            <Image src={previous.src} alt={alt} fill sizes="100vw" className="object-contain object-left" />
+          )}
+          <Image
+            key={index}
+            src={current.src}
+            alt={alt}
+            fill
+            sizes="100vw"
+            className={`object-contain object-left ${previous && !reduceMotion ? 'carousel-fade-in' : ''}`}
+            style={previous && !reduceMotion ? { animationDuration: `${FADE_MS}ms` } : undefined}
+          />
         </button>
       </ParallaxReveal>
 
