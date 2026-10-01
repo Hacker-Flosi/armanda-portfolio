@@ -85,6 +85,15 @@ function checkAtBottom() {
   return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
 }
 
+// Der Fächer wird nur unterhalb von Tailwinds "sm"-Breakpoint angezeigt
+// (sm:hidden) — ohne diese Prüfung konnte schnelles Mausrad-/Trackpad-
+// Scrollen auf dem Desktop denselben Schwung-Impuls auslösen und die Seite
+// wechseln, obwohl dort gar kein Fächer zu sehen war.
+const MOBILE_BREAKPOINT = 640
+function isMobileViewport() {
+  return window.innerWidth < MOBILE_BREAKPOINT
+}
+
 function triggerNavigate() {
   if (navigated) return
   navigated = true
@@ -96,11 +105,12 @@ function ensureInit() {
   initialized = true
 
   function onTouchStart(e: TouchEvent) {
+    if (!isMobileViewport()) return
     lastTouchY = e.touches[0].clientY
   }
 
   function onTouchMove(e: TouchEvent) {
-    if (lastTouchY === null) return
+    if (lastTouchY === null || !isMobileViewport()) return
     const y = e.touches[0].clientY
     const delta = lastTouchY - y // positiv = Finger zieht nach oben = will weiter nach unten scrollen
     lastTouchY = y
@@ -145,7 +155,14 @@ function velocityFrame() {
   const velocity = y - lastScrollY // px seit dem letzten Frame, positiv = Richtung Seitenende
   const bottom = checkAtBottom()
 
-  if (bottom && !lastAtBottom && lastTouchY === null && !navigated && velocity <= MAX_PLAUSIBLE_FRAME_DELTA) {
+  if (
+    bottom &&
+    !lastAtBottom &&
+    lastTouchY === null &&
+    !navigated &&
+    velocity <= MAX_PLAUSIBLE_FRAME_DELTA &&
+    isMobileViewport()
+  ) {
     const impulse = Math.min(MAX_IMPULSE, Math.max(0, velocity) * VELOCITY_SCALE)
     if (impulse >= MIN_IMPULSE) {
       const tensioned = impulse / DRAG_THRESHOLD > 0.85
