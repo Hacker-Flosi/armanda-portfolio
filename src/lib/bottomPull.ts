@@ -14,7 +14,6 @@ export type BottomPullState = {
 
 export const DRAG_THRESHOLD = 170
 const ELASTIC_MAX = 64
-const FLICK_SPEED = 1.1 // px/ms
 
 function rubberBand(distance: number, max: number) {
   return max * (1 - Math.exp(-distance / max))
@@ -55,30 +54,23 @@ function ensureInit() {
   let atBottom = false
   let dragStartY: number | null = null
   let navigated = false
-  let lastY = window.scrollY
-  let lastT = performance.now()
 
   function checkAtBottom() {
     return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
   }
 
   function onScroll() {
-    const now = performance.now()
-    const dt = now - lastT
-    const y = window.scrollY
-    if (dt > 0) {
-      const speed = Math.abs(y - lastY) / dt
-      const bottom = checkAtBottom()
-      if (bottom && !atBottom && speed > FLICK_SPEED && dragStartY === null) {
-        // Schnell (Flick) am Ende angekommen -> kurzer Bounce als Feedback,
-        // ohne den Fächer zu öffnen oder zu navigieren.
-        setState({ elastic: 22 })
-        setTimeout(() => setState({ elastic: 0 }), 170)
-      }
-      atBottom = bottom
+    const bottom = checkAtBottom()
+    if (bottom && !atBottom && dragStartY === null) {
+      // Per Schwung (ohne gehaltenen Finger) am Ende angekommen -> kurzer
+      // Bounce als Feedback, ohne den Fächer zu öffnen oder zu navigieren.
+      // Kein Geschwindigkeits-Check mehr: mobile Browser drosseln/bündeln
+      // Scroll-Events beim Momentum-Scrollen zu unterschiedlich, um die
+      // Geschwindigkeit verlässlich zu messen.
+      setState({ elastic: 22 })
+      setTimeout(() => setState({ elastic: 0 }), 170)
     }
-    lastY = y
-    lastT = now
+    atBottom = bottom
   }
 
   window.addEventListener('scroll', onScroll, { passive: true })

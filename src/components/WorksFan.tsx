@@ -36,7 +36,7 @@ export function WorksFan({ works }: { works: FanWork[] }) {
           return (
             <div
               key={work.id}
-              className="absolute left-1/2 bottom-0 w-32 aspect-[3/4] rounded-md overflow-hidden shadow-[0_10px_24px_rgba(0,0,0,0.3)]"
+              className="absolute left-1/2 bottom-0 w-32 aspect-[3/4] rounded-md overflow-hidden shadow-[0_3px_8px_rgba(0,0,0,0.22)]"
               style={{
                 viewTransitionName: `fan-work-${work.id}`,
                 transform: `translateX(-50%) translateX(${offset * 4}px) rotate(${angle}deg) translateY(${-lift}px) scale(${scale})`,
@@ -48,9 +48,10 @@ export function WorksFan({ works }: { works: FanWork[] }) {
           )
         })}
       </div>
-      {/* Deckt den unteren Streifen der Karten permanent ab, damit der Fächer
-          immer "angeschnitten" wirkt, ohne das Aufklappen nach oben zu clippen. */}
-      <div className="absolute inset-x-0 bottom-0 bg-[var(--bg)]" style={{ height: MASK_HEIGHT }} />
+      {/* Deckt den unteren Streifen der Karten (inkl. ihrem Schlagschatten)
+          permanent ab, damit der Fächer immer "angeschnitten" wirkt, ohne
+          das Aufklappen nach oben zu clippen. */}
+      <div className="absolute inset-x-0 bg-[var(--bg)]" style={{ bottom: -16, height: MASK_HEIGHT + 16 }} />
     </div>
   )
 }
