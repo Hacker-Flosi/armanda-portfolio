@@ -37,7 +37,7 @@ export function CursorImageList({ items }: { items: CursorImageItem[] }) {
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setActiveId(null)}
     >
-      <p className="hidden sm:block text-sm text-[var(--ink-muted)] mb-2">Cursor über einen Titel bewegen</p>
+      <p className="hidden sm:block text-sm text-[var(--ink-muted)] mb-2 md:ml-[9rem]">Cursor über einen Titel bewegen</p>
 
       {/* Desktop: reine Titelliste, das Bild erscheint schwebend am Cursor */}
       <ul className="hidden sm:flex flex-col divide-y divide-[var(--line)]">

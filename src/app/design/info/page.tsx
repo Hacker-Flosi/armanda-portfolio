@@ -32,7 +32,7 @@ export default async function DesignInfoPage() {
         <div className="flex flex-col gap-4 md:relative">
           <SectionTag>01 — Profil</SectionTag>
           <p
-            className="whitespace-pre-line font-medium md:pt-10"
+            className="whitespace-pre-line font-medium md:indent-[9rem]"
             style={{ fontSize: 'clamp(1.9rem, 1.4rem + 2.1vw, 3.75rem)', lineHeight: '0.9em', letterSpacing: '-0.02em' }}
           >
             {about?.bio}
@@ -43,7 +43,7 @@ export default async function DesignInfoPage() {
           <div className="flex flex-col gap-4 md:relative">
             <SectionTag>02 — Ansatz</SectionTag>
             <p
-              className="whitespace-pre-line font-medium md:pt-10"
+              className="whitespace-pre-line font-medium md:indent-[9rem]"
               style={{ fontSize: 'clamp(1.9rem, 1.4rem + 2.1vw, 3.75rem)', lineHeight: '0.9em', letterSpacing: '-0.02em' }}
             >
               {about.approach}
@@ -54,9 +54,7 @@ export default async function DesignInfoPage() {
         {workItems.length > 0 && (
           <div className="flex flex-col gap-4 md:relative">
             <SectionTag>03 — Arbeiten</SectionTag>
-            <div className="md:pt-10">
-              <CursorImageList items={workItems} />
-            </div>
+            <CursorImageList items={workItems} />
           </div>
         )}
 
@@ -65,10 +63,10 @@ export default async function DesignInfoPage() {
           (about?.industries && about.industries.length > 0)) && (
           <div className="flex flex-col gap-4 md:relative">
             <SectionTag>04 — Info</SectionTag>
-            <div className="flex flex-col gap-6 text-lg md:pt-10">
+            <div className="flex flex-col gap-6 text-lg">
               {about?.services && about.services.length > 0 && (
                 <div>
-                  <h3 className="text-sm text-[var(--ink-muted)] mb-1">Leistungen</h3>
+                  <h3 className="text-sm text-[var(--ink-muted)] mb-1 md:ml-[9rem]">Leistungen</h3>
                   <ul className="flex flex-col gap-1">
                     {about.services.map((service, i) => (
                       <li key={i}>{service}</li>
