@@ -29,35 +29,43 @@ export default async function DesignInfoPage() {
     <>
       <DesignHeader />
       <main className="flex-1 px-4 py-10 flex flex-col gap-10 max-w-3xl">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 md:relative">
           <SectionTag>01 — Profil</SectionTag>
-          <p className="whitespace-pre-line text-3xl sm:text-4xl font-medium leading-[0.95] tracking-tight">
+          <p
+            className="whitespace-pre-line font-medium md:pt-10"
+            style={{ fontSize: 'clamp(1.9rem, 1.4rem + 2.1vw, 3.75rem)', lineHeight: '0.9em', letterSpacing: '-0.02em' }}
+          >
             {about?.bio}
           </p>
         </div>
 
         {about?.approach && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 md:relative">
             <SectionTag>02 — Ansatz</SectionTag>
-            <p className="whitespace-pre-line text-3xl sm:text-4xl font-medium leading-[0.95] tracking-tight">
+            <p
+              className="whitespace-pre-line font-medium md:pt-10"
+              style={{ fontSize: 'clamp(1.9rem, 1.4rem + 2.1vw, 3.75rem)', lineHeight: '0.9em', letterSpacing: '-0.02em' }}
+            >
               {about.approach}
             </p>
           </div>
         )}
 
         {workItems.length > 0 && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 md:relative">
             <SectionTag>03 — Arbeiten</SectionTag>
-            <CursorImageList items={workItems} />
+            <div className="md:pt-10">
+              <CursorImageList items={workItems} />
+            </div>
           </div>
         )}
 
         {((about?.services && about.services.length > 0) ||
           (about?.clients && about.clients.length > 0) ||
           (about?.industries && about.industries.length > 0)) && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 md:relative">
             <SectionTag>04 — Info</SectionTag>
-            <div className="flex flex-col gap-6 text-lg">
+            <div className="flex flex-col gap-6 text-lg md:pt-10">
               {about?.services && about.services.length > 0 && (
                 <div>
                   <h3 className="text-sm text-[var(--ink-muted)] mb-1">Leistungen</h3>
