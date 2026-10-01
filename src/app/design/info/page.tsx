@@ -1,12 +1,29 @@
 import { DesignHeader } from '@/components/DesignHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SectionTag } from '@/components/SectionTag'
-import { getDesignAbout } from '@/sanity/lib/queries'
+import { CursorImageList } from '@/components/CursorImageList'
+import { getDesignAbout, getDesignWorks } from '@/sanity/lib/queries'
+import { urlFor } from '@/sanity/lib/image'
 
 export const revalidate = 60
 
 export default async function DesignInfoPage() {
-  const about = await getDesignAbout()
+  const [about, works] = await Promise.all([getDesignAbout(), getDesignWorks()])
+
+  const workItems = works.flatMap((work) => {
+    const coverPos = work.images?.findIndex((entry) => entry.isMobileCover) ?? -1
+    const cover = work.images?.[coverPos === -1 ? 0 : coverPos]
+    if (!cover) return []
+    return [
+      {
+        id: work._id,
+        title: work.title,
+        subtitle: [work.category, work.year].filter(Boolean).join(' · '),
+        src: urlFor(cover.image).width(800).fit('max').auto('format').url(),
+        aspectRatio: cover.aspectRatio,
+      },
+    ]
+  })
 
   return (
     <>
@@ -19,14 +36,51 @@ export default async function DesignInfoPage() {
           </p>
         </div>
 
-        {about?.services && about.services.length > 0 && (
+        {about?.approach && (
           <div className="flex flex-col gap-4">
-            <SectionTag>02 — Leistungen</SectionTag>
-            <ul className="flex flex-col gap-1 text-lg">
-              {about.services.map((service, i) => (
-                <li key={i}>{service}</li>
-              ))}
-            </ul>
+            <SectionTag>02 — Ansatz</SectionTag>
+            <p className="whitespace-pre-line text-3xl sm:text-4xl font-medium leading-[0.95] tracking-tight">
+              {about.approach}
+            </p>
+          </div>
+        )}
+
+        {workItems.length > 0 && (
+          <div className="flex flex-col gap-4">
+            <SectionTag>03 — Arbeiten</SectionTag>
+            <CursorImageList items={workItems} />
+          </div>
+        )}
+
+        {((about?.services && about.services.length > 0) ||
+          (about?.clients && about.clients.length > 0) ||
+          (about?.industries && about.industries.length > 0)) && (
+          <div className="flex flex-col gap-4">
+            <SectionTag>04 — Info</SectionTag>
+            <div className="flex flex-col gap-6 text-lg">
+              {about?.services && about.services.length > 0 && (
+                <div>
+                  <h3 className="text-sm text-[var(--ink-muted)] mb-1">Leistungen</h3>
+                  <ul className="flex flex-col gap-1">
+                    {about.services.map((service, i) => (
+                      <li key={i}>{service}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {about?.clients && about.clients.length > 0 && (
+                <div>
+                  <h3 className="text-sm text-[var(--ink-muted)] mb-1">Kunden</h3>
+                  <p>{about.clients.join(', ')}</p>
+                </div>
+              )}
+              {about?.industries && about.industries.length > 0 && (
+                <div>
+                  <h3 className="text-sm text-[var(--ink-muted)] mb-1">Branchen</h3>
+                  <p>{about.industries.join(', ')}</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </main>

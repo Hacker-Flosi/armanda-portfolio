@@ -62,7 +62,10 @@ export type DesignWork = {
 
 export type DesignAbout = {
   bio?: string
+  approach?: string
   services?: string[]
+  clients?: string[]
+  industries?: string[]
 }
 
 const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc){
@@ -83,7 +86,7 @@ const designWorksQuery = /* groq */ `*[_type == "designWork"] | order(order asc)
   client, category, year, description, order
 }`
 
-const designAboutQuery = /* groq */ `*[_type == "designAbout"][0]{ bio, services }`
+const designAboutQuery = /* groq */ `*[_type == "designAbout"][0]{ bio, approach, services, clients, industries }`
 
 export async function getArtworks(): Promise<Artwork[]> {
   return client.fetch(artworksQuery)
