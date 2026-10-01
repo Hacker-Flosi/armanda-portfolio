@@ -35,7 +35,7 @@ function ArtworkImages({ artwork, indices }: { artwork: Artwork; indices: number
     return (
       <ParallaxReveal
         className="relative w-full mx-auto max-h-[88dvh] overflow-hidden"
-        style={{ aspectRatio: entry.aspectRatio ?? 1.3 }}
+        style={{ aspectRatio: entry.aspectRatio ?? 1.3, viewTransitionName: `fan-work-${artwork._id}` }}
       >
         <LightboxTrigger
           index={indices[0]}
@@ -58,7 +58,7 @@ function ArtworkImages({ artwork, indices }: { artwork: Artwork; indices: number
       <div className="sm:hidden">
         <ParallaxReveal
           className="relative w-full mx-auto max-h-[88dvh] overflow-hidden"
-          style={{ aspectRatio: cover.aspectRatio ?? 1.3 }}
+          style={{ aspectRatio: cover.aspectRatio ?? 1.3, viewTransitionName: `fan-work-${artwork._id}` }}
         >
           <LightboxTrigger
             index={coverIndex}

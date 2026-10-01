@@ -1,6 +1,7 @@
 import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { ArtworkList } from '@/components/ArtworkList'
+import { ResolveFanTransition } from '@/components/ResolveFanTransition'
 import { getArtworks } from '@/sanity/lib/queries'
 
 export const revalidate = 60
@@ -15,6 +16,7 @@ export default async function Home() {
         <ArtworkList artworks={artworks} />
       </main>
       <SiteFooter />
+      <ResolveFanTransition />
     </>
   )
 }

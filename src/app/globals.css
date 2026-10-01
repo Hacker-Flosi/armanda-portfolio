@@ -53,21 +53,29 @@ a {
   }
 }
 
-.hint-bounce {
-  animation: hint-bounce 1.6s ease-in-out infinite;
+.fan-tension {
+  animation: fan-tension 0.3s ease-out;
 }
 
-@keyframes hint-bounce {
-  0%, 100% {
-    transform: translateY(0);
+@keyframes fan-tension {
+  0% {
+    transform: scale(1);
   }
-  50% {
-    transform: translateY(3px);
+  40% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hint-bounce {
+  .fan-tension {
     animation: none;
   }
+}
+
+::view-transition-group(*) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }

@@ -1,15 +1,30 @@
 import Image from 'next/image'
 import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
-import { getAbout } from '@/sanity/lib/queries'
+import { getAbout, getArtworks } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
-import { ContinueToWorksHint } from '@/components/ContinueToWorksHint'
+import { WorksFan, type FanWork } from '@/components/WorksFan'
 
 export const revalidate = 60
 
+const FAN_SIZE = 6
+
 export default async function InfoPage() {
-  const about = await getAbout()
+  const [about, artworks] = await Promise.all([getAbout(), getArtworks()])
+
+  const fanWorks: FanWork[] = artworks.slice(0, FAN_SIZE).flatMap((artwork) => {
+    if (!artwork.images || artwork.images.length === 0) return []
+    const coverPos = artwork.images.findIndex((entry) => entry.isMobileCover)
+    const cover = artwork.images[coverPos === -1 ? 0 : coverPos]
+    return [
+      {
+        id: artwork._id,
+        src: urlFor(cover.image).width(200).fit('max').auto('format').url(),
+        alt: artwork.title,
+      },
+    ]
+  })
 
   return (
     <>
@@ -59,7 +74,7 @@ export default async function InfoPage() {
         </div>
       </main>
       <SiteFooter />
-      <ContinueToWorksHint />
+      <WorksFan works={fanWorks} />
     </>
   )
 }
