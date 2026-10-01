@@ -99,3 +99,19 @@ a {
   animation-duration: 0.5s;
   animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
+.carousel-fill {
+  width: 0%;
+  animation-name: carousel-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes carousel-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}

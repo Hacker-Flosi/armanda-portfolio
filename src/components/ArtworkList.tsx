@@ -2,6 +2,7 @@ import { urlFor } from '@/sanity/lib/image'
 import type { Artwork } from '@/sanity/lib/queries'
 import { LightboxProvider, LightboxTrigger } from '@/components/Lightbox'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
+import { MobileImageCarousel } from '@/components/MobileImageCarousel'
 
 const STATUS_LABEL: Record<string, string> = {
   verfuegbar: 'verfügbar',
@@ -49,26 +50,22 @@ function ArtworkImages({ artwork, indices }: { artwork: Artwork; indices: number
   }
 
   const coverPos = artwork.images.findIndex((entry) => entry.isMobileCover)
-  const cover = artwork.images[coverPos === -1 ? 0 : coverPos]
-  const coverIndex = indices[coverPos === -1 ? 0 : coverPos]
+  const startAt = coverPos === -1 ? 0 : coverPos
+  const carouselImages = artwork.images.map((entry) => ({
+    src: urlFor(entry.image).width(1800).fit('max').auto('format').url(),
+    aspectRatio: entry.aspectRatio,
+  }))
 
   return (
     <>
-      {/* Mobil: nur das ausgewählte Titelbild, restliche Bilder bleiben über die Lightbox erreichbar */}
-      <div className="sm:hidden">
-        <ParallaxReveal
-          className="relative w-full mx-auto max-h-[88dvh] overflow-hidden"
-          style={{ aspectRatio: cover.aspectRatio ?? 1.3, viewTransitionName: `fan-work-${artwork._id}` }}
-        >
-          <LightboxTrigger
-            index={coverIndex}
-            src={urlFor(cover.image).width(1800).fit('max').auto('format').url()}
-            alt={artwork.title}
-            sizes="100vw"
-            className="object-contain object-left"
-          />
-        </ParallaxReveal>
-      </div>
+      {/* Mobil: wechselt automatisch durch alle Bilder, mit Fortschrittsanzeige */}
+      <MobileImageCarousel
+        images={carouselImages}
+        alt={artwork.title}
+        globalIndices={indices}
+        startAt={startAt}
+        viewTransitionName={`fan-work-${artwork._id}`}
+      />
 
       {/* Ab Tablet aufwärts: beide Bilder nebeneinander */}
       <div className="hidden sm:grid grid-cols-2 gap-0.5 aspect-[16/10] max-h-[88dvh]">
