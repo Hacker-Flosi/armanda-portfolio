@@ -5,7 +5,6 @@ import { getAbout, getArtworks } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
 import { WorksFan, type FanWork } from '@/components/WorksFan'
-import { InfoEndInteraction } from '@/components/InfoEndInteraction'
 
 export const revalidate = 60
 
@@ -30,7 +29,7 @@ export default async function InfoPage() {
   return (
     <>
       <SiteHeader />
-      <InfoEndInteraction className="flex-1 grid grid-cols-1 md:grid-cols-[2fr_3fr]">
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-[2fr_3fr]">
         <ParallaxReveal className="relative w-full h-full min-h-[280px] md:min-h-0 overflow-hidden">
           {about?.photo && (
             <Image
@@ -42,7 +41,7 @@ export default async function InfoPage() {
             />
           )}
         </ParallaxReveal>
-        <div className="px-3 pt-6 pb-4 flex flex-col gap-6">
+        <div className="px-3 pt-6 pb-4 flex flex-col gap-6 min-h-[calc(100vh-72px)] md:min-h-0">
           <p className="whitespace-pre-line text-lg leading-relaxed">{about?.bio}</p>
 
           {about?.exhibitions && about.exhibitions.length > 0 && (
@@ -73,9 +72,11 @@ export default async function InfoPage() {
             </div>
           )}
 
-          <WorksFan works={fanWorks} />
+          <div className="mt-auto">
+            <WorksFan works={fanWorks} />
+          </div>
         </div>
-      </InfoEndInteraction>
+      </main>
       <SiteFooter />
     </>
   )

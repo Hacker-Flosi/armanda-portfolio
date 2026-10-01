@@ -1,25 +1,21 @@
 // Gemeinsamer Zustand für die "Zieh dich zu den Werken"-Geste am Ende der
 // Info-Seite. Ein einziger Satz window-Listener (lazy initialisiert bei der
-// ersten Subscription) treibt sowohl den Fächer (öffnet sich mit dem Zug)
-// als auch den elastischen Seiten-Bounce an — beide lesen denselben Zustand
-// über useSyncExternalStore, ohne Props über die Server/Client-Grenze reichen
-// zu müssen.
+// ersten Subscription) verfolgt den Finger durchgehend: solange normal
+// gescrollt werden kann, passiert nichts; sobald der Rand erreicht ist,
+// fliesst jede weitere Fingerbewegung direkt in die "pull"-Distanz, die den
+// Fächer öffnet — ganz ohne eine neue Geste beginnen zu müssen. Lässt man
+// vor der Schwelle los, federt der Fächer (über CSS-Transition in den
+// Lesern) einfach zurück; das ist der gewünschte "Bounce".
 
 export type BottomPullState = {
-  dragY: number // rohe Zugdistanz in px, treibt den Fächer
-  elastic: number // gedämpfte Distanz für den Gummiband-Bounce des Inhalts
+  pull: number // wie weit über den unteren Rand hinaus gezogen wurde (px)
   tensioned: boolean
-  dragging: boolean // true während der Finger aktiv am unteren Rand zieht
+  dragging: boolean // true während der Finger aktiv Pull-Distanz aufbaut
 }
 
 export const DRAG_THRESHOLD = 170
-const ELASTIC_MAX = 64
 
-function rubberBand(distance: number, max: number) {
-  return max * (1 - Math.exp(-distance / max))
-}
-
-let state: BottomPullState = { dragY: 0, elastic: 0, tensioned: false, dragging: false }
+let state: BottomPullState = { pull: 0, tensioned: false, dragging: false }
 const listeners = new Set<() => void>()
 let initialized = false
 let navigateCallback: (() => void) | null = null
@@ -51,56 +47,41 @@ function ensureInit() {
   if (initialized || typeof window === 'undefined') return
   initialized = true
 
-  let atBottom = false
-  let dragStartY: number | null = null
+  let lastTouchY: number | null = null
   let navigated = false
 
   function checkAtBottom() {
     return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
   }
 
-  function onScroll() {
-    const bottom = checkAtBottom()
-    if (bottom && !atBottom && dragStartY === null) {
-      // Per Schwung (ohne gehaltenen Finger) am Ende angekommen -> kurzer
-      // Bounce als Feedback, ohne den Fächer zu öffnen oder zu navigieren.
-      // Kein Geschwindigkeits-Check mehr: mobile Browser drosseln/bündeln
-      // Scroll-Events beim Momentum-Scrollen zu unterschiedlich, um die
-      // Geschwindigkeit verlässlich zu messen.
-      setState({ elastic: 22 })
-      setTimeout(() => setState({ elastic: 0 }), 170)
-    }
-    atBottom = bottom
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true })
-  window.addEventListener('resize', onScroll)
-
   function onTouchStart(e: TouchEvent) {
-    if (!atBottom) return
-    dragStartY = e.touches[0].clientY
-    setState({ dragging: true })
+    lastTouchY = e.touches[0].clientY
   }
 
   function onTouchMove(e: TouchEvent) {
-    if (dragStartY === null) return
-    if (!atBottom) {
-      dragStartY = null
-      setState({ dragY: 0, elastic: 0, tensioned: false, dragging: false })
+    if (lastTouchY === null) return
+    const y = e.touches[0].clientY
+    const delta = lastTouchY - y // positiv = Finger zieht nach oben = will weiter nach unten scrollen
+    lastTouchY = y
+
+    if (!checkAtBottom()) {
+      if (state.pull !== 0) setState({ pull: 0, tensioned: false, dragging: false })
       return
     }
-    const dy = Math.max(0, dragStartY - e.touches[0].clientY)
-    const tensioned = dy / DRAG_THRESHOLD > 0.85
-    setState({ dragY: dy, elastic: rubberBand(dy, ELASTIC_MAX), tensioned, dragging: true })
-    if (dy >= DRAG_THRESHOLD && !navigated) {
+
+    const pull = Math.max(0, state.pull + delta)
+    const tensioned = pull / DRAG_THRESHOLD > 0.85
+    setState({ pull, tensioned, dragging: true })
+
+    if (pull >= DRAG_THRESHOLD && !navigated) {
       navigated = true
       navigateCallback?.()
     }
   }
 
   function onTouchEnd() {
-    dragStartY = null
-    if (!navigated) setState({ dragY: 0, elastic: 0, tensioned: false, dragging: false })
+    lastTouchY = null
+    if (!navigated) setState({ pull: 0, tensioned: false, dragging: false })
   }
 
   window.addEventListener('touchstart', onTouchStart, { passive: true })

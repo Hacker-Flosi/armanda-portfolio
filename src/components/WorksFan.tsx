@@ -1,8 +1,10 @@
 'use client'
 
 import Image from 'next/image'
-import { useSyncExternalStore } from 'react'
-import { DRAG_THRESHOLD, getBottomPullState, subscribeBottomPull } from '@/lib/bottomPull'
+import { useEffect, useSyncExternalStore } from 'react'
+import { useRouter } from 'next/navigation'
+import { DRAG_THRESHOLD, getBottomPullState, setBottomPullNavigate, subscribeBottomPull } from '@/lib/bottomPull'
+import { navigateWithFanTransition } from '@/lib/viewTransition'
 
 export type FanWork = { id: string; src: string; alt: string }
 
@@ -12,8 +14,18 @@ export type FanWork = { id: string; src: string; alt: string }
 const MASK_HEIGHT = 64
 
 export function WorksFan({ works }: { works: FanWork[] }) {
-  const { dragY, tensioned } = useSyncExternalStore(subscribeBottomPull, getBottomPullState, getBottomPullState)
-  const progress = Math.min(1, dragY / DRAG_THRESHOLD)
+  const router = useRouter()
+  const { pull, tensioned, dragging } = useSyncExternalStore(
+    subscribeBottomPull,
+    getBottomPullState,
+    getBottomPullState
+  )
+  const progress = Math.min(1, pull / DRAG_THRESHOLD)
+
+  useEffect(() => {
+    setBottomPullNavigate(() => navigateWithFanTransition(router, '/'))
+    return () => setBottomPullNavigate(null)
+  }, [router])
 
   if (works.length === 0) return null
 
@@ -41,6 +53,9 @@ export function WorksFan({ works }: { works: FanWork[] }) {
                 viewTransitionName: `fan-work-${work.id}`,
                 transform: `translateX(-50%) translateX(${offset * 4}px) rotate(${angle}deg) translateY(${-lift}px) scale(${scale})`,
                 opacity,
+                transition: dragging
+                  ? 'none'
+                  : 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.45s ease',
               }}
             >
               <Image src={work.src} alt={work.alt} fill sizes="128px" className="object-cover" />
