@@ -6,6 +6,7 @@ export function DesignHeader() {
       <Link href="/design" className="font-medium">
         Armanda Asani — Grafikdesign
       </Link>
+      <Link href="/design/info">Info</Link>
     </header>
   )
 }

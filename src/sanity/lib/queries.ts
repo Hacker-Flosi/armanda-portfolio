@@ -60,6 +60,11 @@ export type DesignWork = {
   order: number
 }
 
+export type DesignAbout = {
+  bio?: string
+  services?: string[]
+}
+
 const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc){
   _id, title, "slug": slug.current,
   "images": images[]{ image, isMobileCover, "aspectRatio": image.asset->metadata.dimensions.aspectRatio },
@@ -78,6 +83,8 @@ const designWorksQuery = /* groq */ `*[_type == "designWork"] | order(order asc)
   client, category, year, description, order
 }`
 
+const designAboutQuery = /* groq */ `*[_type == "designAbout"][0]{ bio, services }`
+
 export async function getArtworks(): Promise<Artwork[]> {
   return client.fetch(artworksQuery)
 }
@@ -92,4 +99,8 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
 
 export async function getDesignWorks(): Promise<DesignWork[]> {
   return client.fetch(designWorksQuery)
+}
+
+export async function getDesignAbout(): Promise<DesignAbout | null> {
+  return client.fetch(designAboutQuery)
 }
