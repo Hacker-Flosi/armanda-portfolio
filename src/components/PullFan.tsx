@@ -5,6 +5,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   DRAG_THRESHOLD,
+  activateBottomPull,
   getBottomPullState,
   resetBottomPull,
   setBottomPullNavigate,
@@ -47,9 +48,11 @@ export function PullFan({ items, href }: { items: PullFanItem[]; href: string })
   const center = (items.length - 1) / 2
 
   return (
-    <div
-      aria-hidden
-      className={`sm:hidden relative h-48 pointer-events-none ${showHint ? 'fan-hint' : ''}`}
+    <button
+      type="button"
+      aria-label="Weiter"
+      onClick={activateBottomPull}
+      className={`sm:hidden relative block w-full h-48 cursor-pointer ${showHint ? 'fan-hint' : ''}`}
       style={{ marginBottom: -FOOTER_OVERLAP }}
     >
       <div
@@ -82,6 +85,6 @@ export function PullFan({ items, href }: { items: PullFanItem[]; href: string })
           )
         })}
       </div>
-    </div>
+    </button>
   )
 }

@@ -112,6 +112,12 @@ function triggerNavigate() {
   setTimeout(() => navigateCallback?.(), OPEN_SETTLE_MS)
 }
 
+// Tippen auf den Fächer löst dieselbe Navigation aus wie Ziehen/Schwung: der
+// Fächer klappt zuerst auf, dann folgt der Übergang.
+export function activateBottomPull() {
+  triggerNavigate()
+}
+
 function ensureInit() {
   if (initialized || typeof window === 'undefined') return
   initialized = true
