@@ -1,6 +1,7 @@
 import { urlFor } from '@/sanity/lib/image'
 import type { Artwork } from '@/sanity/lib/queries'
 import { LightboxProvider, LightboxTrigger } from '@/components/Lightbox'
+import { Reveal } from '@/components/Reveal'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
 import { MobileImageCarousel } from '@/components/MobileImageCarousel'
 
@@ -70,7 +71,7 @@ function ArtworkImages({ artwork, indices }: { artwork: Artwork; indices: number
       {/* Ab Tablet aufwärts: beide Bilder nebeneinander */}
       <div className="hidden sm:grid grid-cols-2 gap-0.5 aspect-[16/10] max-h-[88dvh]">
         {artwork.images.slice(0, 2).map((entry, i) => (
-          <ParallaxReveal key={i} className="relative h-full w-full overflow-hidden">
+          <ParallaxReveal key={i} className="reveal-soft relative h-full w-full overflow-hidden">
             <LightboxTrigger
               index={indices[i]}
               src={urlFor(entry.image).width(1200).fit('max').auto('format').url()}
@@ -88,14 +89,14 @@ function ArtworkImages({ artwork, indices }: { artwork: Artwork; indices: number
 function ArtworkRow({ artwork, indices }: { artwork: Artwork; indices: number[] }) {
   return (
     <div className="border-t border-[var(--line)] first:border-t-0">
-      <div className="flex items-baseline justify-between px-4 py-3">
+      <Reveal className="reveal-soft flex items-baseline justify-between px-4 py-3">
         <h2 className="font-medium">{artwork.title}</h2>
         <span className="text-[var(--ink-muted)] text-sm">Edition {artwork.edition ?? '1/1'}</span>
-      </div>
+      </Reveal>
 
       <ArtworkImages artwork={artwork} indices={indices} />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-2 gap-x-4 px-4 py-3 text-sm">
+      <Reveal className="reveal-soft grid grid-cols-2 sm:grid-cols-4 gap-y-2 gap-x-4 px-4 py-3 text-sm">
         <div>
           <div className="text-[var(--ink-muted)]">Jahr</div>
           <div>{artwork.year}</div>
@@ -112,7 +113,7 @@ function ArtworkRow({ artwork, indices }: { artwork: Artwork; indices: number[] 
           <div className="text-[var(--ink-muted)]">Status</div>
           <div><StatusCell status={artwork.status} /></div>
         </div>
-      </div>
+      </Reveal>
     </div>
   )
 }

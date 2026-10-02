@@ -3,6 +3,8 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { getAbout, getArtworks } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
+import { Reveal } from '@/components/Reveal'
+import { MaskRevealText } from '@/components/MaskRevealText'
 import { ParallaxReveal } from '@/components/ParallaxReveal'
 import { WorksFan, type FanWork } from '@/components/WorksFan'
 import { ResolveFanTransition } from '@/components/ResolveFanTransition'
@@ -46,22 +48,29 @@ export default async function InfoPage() {
           )}
         </ParallaxReveal>
         <div className="px-3 pt-6 pb-4 flex flex-col gap-6 flex-1">
-          <p className="whitespace-pre-line text-lg leading-relaxed">{about?.bio}</p>
+          <div className="flex flex-col gap-3">
+            {(about?.bio ?? '')
+              .split(/\n+/)
+              .filter(Boolean)
+              .map((paragraph, i) => (
+                <MaskRevealText key={i} text={paragraph} lineHeight={1.4} className="text-lg" />
+              ))}
+          </div>
 
           {about?.exhibitions && about.exhibitions.length > 0 && (
             <div>
-              <div className="bg-[var(--bar-bg)] text-[var(--bar-fg)] px-2 py-1 text-base">
+              <Reveal className="reveal-soft bg-[var(--bar-bg)] text-[var(--bar-fg)] px-2 py-1 text-base">
                 Ausstellungen
-              </div>
+              </Reveal>
               <div>
                 {about.exhibitions.map((exhibition, i) => {
                   const fields = [exhibition.year, exhibition.type, exhibition.title, exhibition.location].filter(
                     Boolean
                   )
                   return (
-                    <div
+                    <Reveal
                       key={i}
-                      className="flex flex-wrap items-center gap-1.5 py-1.5 text-base border-t border-[var(--line)]"
+                      className="reveal-soft flex flex-wrap items-center gap-1.5 py-1.5 text-base border-t border-[var(--line)]"
                     >
                       {fields.map((field, j) => (
                         <span key={j} className="flex items-center gap-1.5">
@@ -69,7 +78,7 @@ export default async function InfoPage() {
                           {field}
                         </span>
                       ))}
-                    </div>
+                    </Reveal>
                   )
                 })}
               </div>
