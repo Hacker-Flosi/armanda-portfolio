@@ -8,6 +8,13 @@ export const siteSettings = defineType({
     defineField({ name: 'mailAddress', title: 'Mail-Adresse', type: 'string' }),
     defineField({ name: 'mailSubject', title: 'Mail-Betreff', type: 'string' }),
     defineField({ name: 'instagramUrl', title: 'Instagram-URL', type: 'url' }),
+    defineField({
+      name: 'cvFile',
+      title: 'Lebenslauf / Portfolio (PDF)',
+      type: 'file',
+      options: { accept: 'application/pdf' },
+      description: 'Erscheint im Header des Grafikdesign-Portfolios als "CV".',
+    }),
     defineField({ name: 'printsUrl', title: 'Prints-URL (extern)', type: 'url' }),
     defineField({
       name: 'designUrl',

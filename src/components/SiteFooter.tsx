@@ -11,7 +11,7 @@ export async function SiteFooter() {
     : 'mailto:mail@armanda-asani.ch?subject=hoi'
 
   return (
-    <footer className="sticky bottom-0 z-20 flex items-center justify-between bg-[var(--bar-bg)] text-[var(--bar-fg)] px-4 h-9 text-base shrink-0">
+    <footer style={{ viewTransitionName: 'site-footer' }} className="sticky bottom-0 z-20 flex items-center justify-between bg-[var(--bar-bg)] text-[var(--bar-fg)] px-4 h-9 text-base shrink-0">
       <a href={mailHref}>Mail</a>
       <a href={settings?.instagramUrl ?? 'https://www.instagram.com/armanda.asani/'} target="_blank" rel="noreferrer">
         Instagram

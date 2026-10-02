@@ -20,7 +20,7 @@ export const designWork = defineType({
     }),
     defineField({
       name: 'images',
-      title: 'Bilder',
+      title: 'Medien (Bilder & Videos)',
       type: 'array',
       of: [
         {
@@ -32,7 +32,13 @@ export const designWork = defineType({
               title: 'Bild',
               type: 'image',
               options: { hotspot: true },
-              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'video',
+              title: 'Video',
+              type: 'file',
+              options: { accept: 'video/*' },
+              description: 'Entweder ein Bild ODER ein Video pro Eintrag.',
             }),
             defineField({
               name: 'isMobileCover',
@@ -43,10 +49,15 @@ export const designWork = defineType({
               initialValue: false,
             }),
           ],
+          validation: (rule) =>
+            rule.custom((value) => {
+              const item = value as { image?: unknown; video?: unknown } | undefined
+              return item?.image || item?.video ? true : 'Bild oder Video wählen'
+            }),
           preview: {
-            select: { media: 'image', isMobileCover: 'isMobileCover' },
-            prepare: ({ media, isMobileCover }) => ({
-              title: isMobileCover ? 'Mobil-Titelbild' : 'Bild',
+            select: { media: 'image', video: 'video.asset._ref', isMobileCover: 'isMobileCover' },
+            prepare: ({ media, video, isMobileCover }) => ({
+              title: `${video ? 'Video' : 'Bild'}${isMobileCover ? ' (Mobil-Titelbild)' : ''}`,
               media,
             }),
           },
@@ -61,16 +72,22 @@ export const designWork = defineType({
       description: 'z.B. Name des Auftraggebers — leer lassen bei privaten/eigenen Arbeiten.',
     }),
     defineField({
-      name: 'category',
-      title: 'Kategorie',
-      type: 'string',
-      description: 'z.B. Branding, Editorial, Verpackung, Typografie',
+      name: 'tags',
+      title: 'Kategorien (Tags)',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: { layout: 'tags' },
+      description: 'Beliebig viele, z.B. Branding, Editorial, Verpackung, Typografie.',
     }),
     defineField({
       name: 'year',
       title: 'Jahr',
       type: 'string',
     }),
+    defineField({ name: 'challenge', title: 'Fallstudie — Aufgabe', type: 'text', rows: 3 }),
+    defineField({ name: 'approach', title: 'Fallstudie — Vorgehen', type: 'text', rows: 3 }),
+    defineField({ name: 'result', title: 'Fallstudie — Ergebnis', type: 'text', rows: 3 }),
+    defineField({ name: 'role', title: 'Fallstudie — Armandas Rolle', type: 'string' }),
     defineField({
       name: 'description',
       title: 'Beschreibung',

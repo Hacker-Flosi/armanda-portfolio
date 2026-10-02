@@ -22,6 +22,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -129,5 +130,258 @@ a {
   }
   to {
     opacity: 1;
+  }
+}
+
+.cursor-spawn {
+  animation: cursor-spawn 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes cursor-spawn {
+  0% {
+    opacity: 0;
+    filter: blur(20px);
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(18px);
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-spawn {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.reveal.reveal-soft {
+  transform: translateY(48px) scale(0.96);
+  filter: blur(10px);
+  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.reveal-soft.is-revealed {
+  transform: none;
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal.reveal-soft {
+    filter: none;
+    transition: none;
+  }
+}
+
+.archive-overlay-in {
+  animation: archive-overlay-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.archive-overlay-out {
+  animation: archive-overlay-out 0.3s ease-in both;
+}
+
+@keyframes archive-overlay-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(0px);
+  }
+}
+
+@keyframes archive-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.archive-tile {
+  animation: archive-tile-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes archive-tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(36px) scale(0.95);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .archive-overlay-in,
+  .archive-overlay-out,
+  .archive-tile {
+    animation: none;
+  }
+}
+
+.hero-cue-arrow {
+  animation: hero-cue 1.8s ease-in-out infinite;
+}
+
+@keyframes hero-cue {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cue-arrow {
+    animation: none;
+  }
+}
+
+:root {
+  --text-indent: 12%;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --text-indent: 35%;
+  }
+}
+
+/* Seitenübergang Haupt- <-> Info-Seite (Grafikdesign): neue Seite öffnet sich
+   wie ein Vorhang von unten bzw. oben, die alte weicht zurück. Header und
+   Footer bleiben stehen. */
+html[data-transition='up']::view-transition-old(root) {
+  animation: vt-old-up 0.8s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+html[data-transition='up']::view-transition-new(root) {
+  animation: vt-new-up 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+html[data-transition='down']::view-transition-old(root) {
+  animation: vt-old-down 0.8s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+html[data-transition='down']::view-transition-new(root) {
+  animation: vt-new-down 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes vt-old-up {
+  to {
+    transform: translateY(-6%) scale(0.95);
+    opacity: 0.3;
+    filter: blur(8px);
+  }
+}
+@keyframes vt-new-up {
+  from {
+    clip-path: inset(100% 0 0 0 round 28px);
+    transform: translateY(8%);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 0px);
+    transform: none;
+  }
+}
+@keyframes vt-old-down {
+  to {
+    transform: translateY(6%) scale(0.95);
+    opacity: 0.3;
+    filter: blur(8px);
+  }
+}
+@keyframes vt-new-down {
+  from {
+    clip-path: inset(0 0 100% 0 round 28px);
+    transform: translateY(-8%);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 0px);
+    transform: none;
+  }
+}
+
+::view-transition-group(design-header),
+::view-transition-group(site-footer) {
+  animation-duration: 0s;
+}
+
+.record-spin {
+  animation: record-spin 3.2s linear infinite;
+}
+
+@keyframes record-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record-spin {
+    animation: none;
+  }
+}
+
+.eq-bar {
+  height: 100%;
+  transform-origin: bottom;
+  animation: eq-bounce 0.9s ease-in-out infinite;
+}
+
+@keyframes eq-bounce {
+  0%, 100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq-bar {
+    animation: none;
+    transform: scaleY(0.6);
+  }
+}
+
+.carousel-reveal {
+  animation: carousel-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes carousel-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-reveal {
+    animation: none;
   }
 }

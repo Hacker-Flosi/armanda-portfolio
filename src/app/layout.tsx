@@ -17,6 +17,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="de" className={`h-full ${esRebond.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://cdn.sanity.io" crossOrigin="" />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   )
