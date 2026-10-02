@@ -83,10 +83,10 @@ export function StackSection({
       className={`sticky overflow-hidden bg-[var(--bg)] hover:[&>div]:!opacity-100 ${className ?? ''}`}
       style={{
         top: HEADER_PX + index * STRIP_PX,
-        height: `calc(100dvh - ${HEADER_PX * 2 + index * STRIP_PX}px)`,
+        height: `calc(100svh - ${HEADER_PX * 2 + index * STRIP_PX}px)`,
       }}
     >
-      <div ref={innerRef} className="flex flex-col h-full transition-opacity duration-300">
+      <div ref={innerRef} className="flex flex-col h-full sm:transition-opacity sm:duration-300">
         {children}
       </div>
     </div>

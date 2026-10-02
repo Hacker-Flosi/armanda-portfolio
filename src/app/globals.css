@@ -363,6 +363,45 @@ html[data-transition='down']::view-transition-new(root) {
   }
 }
 
+/* Fächer-Übergang (Info -> Werke und zurück): die Fächerkarten wandern in
+   ihre Zielbilder; die Seite dahinter blendet nur weich über. Die Bilder
+   füllen ihre Gruppe (object-fit), statt bei anderem Seitenverhältnis
+   gestreckt zu werden. */
+html[data-transition='fan']::view-transition-group(*) {
+  animation-duration: 0.85s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+html[data-transition='fan']::view-transition-old(*),
+html[data-transition='fan']::view-transition-new(*) {
+  height: 100%;
+  object-fit: cover;
+}
+html[data-transition='fan']::view-transition-group(root) {
+  animation-duration: 0.6s;
+  animation-timing-function: ease;
+}
+html[data-transition='fan']::view-transition-old(root) {
+  animation: vt-fan-old 0.5s ease both;
+}
+html[data-transition='fan']::view-transition-new(root) {
+  animation: vt-fan-new 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+@keyframes vt-fan-old {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fan-new {
+  from {
+    opacity: 0;
+    transform: translateY(2%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 ::view-transition-group(design-header),
 ::view-transition-group(site-footer) {
   animation-duration: 0s;

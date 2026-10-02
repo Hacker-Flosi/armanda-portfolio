@@ -38,7 +38,7 @@ export function PullFan({ items, href }: { items: PullFanItem[]; href: string })
 
   useEffect(() => {
     resetBottomPull()
-    setBottomPullNavigate(() => navigateWithFanTransition(router, href))
+    setBottomPullNavigate(() => navigateWithFanTransition(router, href, 'fan'))
     return () => setBottomPullNavigate(null)
   }, [router, href])
 

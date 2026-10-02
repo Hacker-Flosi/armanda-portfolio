@@ -51,7 +51,7 @@ export function Hero({
       }
       if (videoRef.current) {
         videoRef.current.style.transform = `scale(${1 - progress * 0.06})`
-        videoRef.current.style.borderRadius = `${progress * 28}px`
+        videoRef.current.style.borderRadius = `${progress * 6}px`
         videoRef.current.style.setProperty('--hero-par', `${progress * 70}px`)
         // Die Video-Icons folgen dem sichtbaren Teil der Maske: sie bleiben unter
         // dem Header im Bild, solange das Video noch zu sehen ist.
@@ -118,7 +118,7 @@ export function Hero({
             <div
               className="h-full"
               style={{
-                clipPath: ready ? 'inset(0% 0% 0% 0% round 0px)' : 'inset(16% 14% 16% 14% round 32px)',
+                clipPath: ready ? 'inset(0% 0% 0% 0% round 0px)' : 'inset(16% 14% 16% 14% round 6px)',
                 transform: ready ? 'scale(1)' : 'scale(1.14)',
                 transition:
                   'clip-path 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s',

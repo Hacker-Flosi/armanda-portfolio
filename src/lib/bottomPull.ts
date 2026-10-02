@@ -94,10 +94,22 @@ function isMobileViewport() {
   return window.innerWidth < MOBILE_BREAKPOINT
 }
 
+// Wie lange der Fächer nach einem Schwung-Impuls zum vollen Aufklappen
+// braucht, bevor die View-Transition seinen Zustand einfängt (entspricht der
+// CSS-Transition in PullFan). Ohne diese Pause startete die Transition mit
+// noch geschlossenem Fächer und der Übergang wirkte ruckartig.
+const OPEN_SETTLE_MS = 460
+
 function triggerNavigate() {
   if (navigated) return
   navigated = true
-  navigateCallback?.()
+  if (state.dragging) {
+    // Finger zieht aktiv: der Fächer ist bereits offen (keine Transition).
+    navigateCallback?.()
+    return
+  }
+  setState({ pull: DRAG_THRESHOLD, tensioned: false, dragging: false })
+  setTimeout(() => navigateCallback?.(), OPEN_SETTLE_MS)
 }
 
 function ensureInit() {
