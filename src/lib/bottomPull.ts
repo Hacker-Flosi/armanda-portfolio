@@ -20,6 +20,7 @@ export type BottomPullState = {
   pull: number // wie weit über den unteren Rand hinaus gezogen wurde (px)
   tensioned: boolean
   dragging: boolean // true während der Finger aktiv Pull-Distanz aufbaut
+  aligned: boolean // Fächer richtet sich vor dem Seitenwechsel gerade (ohne Drehung) aus
 }
 
 export const DRAG_THRESHOLD = 170
@@ -37,7 +38,7 @@ const IMPULSE_HOLD_MS = 220 // wie lange der Ausschlag sichtbar bleibt, bevor er
 // schneller Schwung gewertet zu werden.
 const MAX_PLAUSIBLE_FRAME_DELTA = 120
 
-let state: BottomPullState = { pull: 0, tensioned: false, dragging: false }
+let state: BottomPullState = { pull: 0, tensioned: false, dragging: false, aligned: false }
 const listeners = new Set<() => void>()
 let initialized = false
 let navigateCallback: (() => void) | null = null
@@ -74,7 +75,7 @@ export function subscribeBottomPull(listener: () => void) {
 export function resetBottomPull() {
   navigated = false
   lastTouchY = null
-  setState({ pull: 0, tensioned: false, dragging: false })
+  setState({ pull: 0, tensioned: false, dragging: false, aligned: false })
 }
 
 export function setBottomPullNavigate(cb: (() => void) | null) {
@@ -94,22 +95,18 @@ function isMobileViewport() {
   return window.innerWidth < MOBILE_BREAKPOINT
 }
 
-// Wie lange der Fächer nach einem Schwung-Impuls zum vollen Aufklappen
-// braucht, bevor die View-Transition seinen Zustand einfängt (entspricht der
-// CSS-Transition in PullFan). Ohne diese Pause startete die Transition mit
-// noch geschlossenem Fächer und der Übergang wirkte ruckartig.
-const OPEN_SETTLE_MS = 460
+// Vor dem Seitenwechsel richtet sich der Fächer ohne Drehung senkrecht aus
+// (die Karten reihen sich untereinander auf). So gleiten sie in der View-
+// Transition geradlinig in ihre Zielbilder, statt sich dabei zu drehen. Die
+// Pause entspricht der CSS-Transition in PullFan, damit die Transition den
+// fertig ausgerichteten Zustand einfängt.
+const ALIGN_SETTLE_MS = 520
 
 function triggerNavigate() {
   if (navigated) return
   navigated = true
-  if (state.dragging) {
-    // Finger zieht aktiv: der Fächer ist bereits offen (keine Transition).
-    navigateCallback?.()
-    return
-  }
-  setState({ pull: DRAG_THRESHOLD, tensioned: false, dragging: false })
-  setTimeout(() => navigateCallback?.(), OPEN_SETTLE_MS)
+  setState({ pull: DRAG_THRESHOLD, tensioned: false, dragging: false, aligned: true })
+  setTimeout(() => navigateCallback?.(), ALIGN_SETTLE_MS)
 }
 
 // Tippen auf den Fächer löst dieselbe Navigation aus wie Ziehen/Schwung: der

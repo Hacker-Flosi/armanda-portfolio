@@ -26,7 +26,7 @@ const FOOTER_OVERLAP = 52
 // mit ihren jeweiligen Bildern wiederverwendet.
 export function PullFan({ items, href }: { items: PullFanItem[]; href: string }) {
   const router = useRouter()
-  const { pull, tensioned, dragging } = useSyncExternalStore(
+  const { pull, tensioned, dragging, aligned } = useSyncExternalStore(
     subscribeBottomPull,
     getBottomPullState,
     getBottomPullState
@@ -56,28 +56,33 @@ export function PullFan({ items, href }: { items: PullFanItem[]; href: string })
       style={{ marginBottom: -FOOTER_OVERLAP }}
     >
       <div
-        className={tensioned ? 'fan-tension' : undefined}
+        className={tensioned && !aligned ? 'fan-tension' : undefined}
         style={{ position: 'absolute', left: '50%', bottom: 0, width: 0, height: 0 }}
       >
         {items.map((item, i) => {
           const offset = i - center
-          const angle = offset * 15 * eased
+          const angle = aligned ? 0 : offset * 15 * eased
           const lift = eased * 230
-          const scale = 0.88 + 0.12 * eased
+          // Ausgerichtet: Karten stehen senkrecht untereinander, ohne Drehung.
+          const alignedShift = (offset - 0) * 46
+          const x = aligned ? 0 : offset * 4
+          const y = aligned ? -lift + alignedShift : -lift
+          const scale = aligned ? 1 : 0.88 + 0.12 * eased
           const closedOpacity = 0.7 + 0.1 * Math.max(0, 1 - Math.abs(offset) * 0.3)
-          const opacity = closedOpacity + (1 - closedOpacity) * eased
+          const opacity = aligned ? 1 : closedOpacity + (1 - closedOpacity) * eased
 
           return (
             <div
               key={item.id}
-              className="absolute left-1/2 bottom-0 w-32 aspect-[3/4] rounded-md overflow-hidden shadow-[0_3px_8px_rgba(0,0,0,0.22)]"
+              className="absolute left-1/2 bottom-0 w-32 aspect-[3/4] rounded-md overflow-hidden"
               style={{
+                boxShadow: aligned ? 'none' : '0 3px 8px rgba(0,0,0,0.22)',
                 viewTransitionName: item.viewTransitionName ?? `fan-work-${item.id}`,
-                transform: `translateX(-50%) translateX(${offset * 4}px) rotate(${angle}deg) translateY(${-lift}px) scale(${scale})`,
+                transform: `translateX(-50%) translateX(${x}px) rotate(${angle}deg) translateY(${y}px) scale(${scale})`,
                 opacity,
                 transition: dragging
                   ? 'none'
-                  : 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.45s ease',
+                  : 'transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.45s ease',
               }}
             >
               <Image src={item.src} alt={item.alt} fill sizes="128px" className="object-cover" />
