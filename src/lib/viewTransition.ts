@@ -19,8 +19,11 @@ export function navigateWithFanTransition(router: Router, href: string, variant?
     return
   }
 
-  if (variant) document.documentElement.dataset.transition = variant
   const transition = doc.startViewTransition(() => {
+    // Erst nach dem Einfangen des alten Zustands setzen, damit dessen
+    // Darstellung unverändert bleibt.
+    if (variant) document.documentElement.dataset.transition = variant
+    delete document.documentElement.dataset.leaving
     return new Promise<void>((resolve) => {
       pendingResolve = resolve
       router.push(href)
@@ -35,6 +38,7 @@ export function navigateWithFanTransition(router: Router, href: string, variant?
   })
   void transition.finished.finally(() => {
     delete document.documentElement.dataset.transition
+    delete document.documentElement.dataset.leaving
   })
 }
 

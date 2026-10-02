@@ -73,6 +73,7 @@ export function subscribeBottomPull(listener: () => void) {
 // nicht neu geladen wird — jeder weitere Versuch hätte dann einfach nichts
 // mehr getan.
 export function resetBottomPull() {
+  delete document.documentElement.dataset.leaving
   navigated = false
   lastTouchY = null
   setState({ pull: 0, tensioned: false, dragging: false, aligned: false })
@@ -95,18 +96,29 @@ function isMobileViewport() {
   return window.innerWidth < MOBILE_BREAKPOINT
 }
 
-// Vor dem Seitenwechsel richtet sich der Fächer ohne Drehung senkrecht aus
-// (die Karten reihen sich untereinander auf). So gleiten sie in der View-
-// Transition geradlinig in ihre Zielbilder, statt sich dabei zu drehen. Die
-// Pause entspricht der CSS-Transition in PullFan, damit die Transition den
-// fertig ausgerichteten Zustand einfängt.
-const ALIGN_SETTLE_MS = 520
+// Abbau: bevor die Seite wechselt, fahren Fächer und alle Komponenten der
+// Seite nacheinander heraus (von unten nach oben). Erst danach folgt die
+// Navigation; die neue Seite baut sich selbst wieder auf.
+const STAGGER_MS = 45
+const MAX_STAGGER_MS = 320
+const LEAVE_MS = 450
+
+function dismantlePage() {
+  const root = document.documentElement
+  const targets = Array.from(document.querySelectorAll<HTMLElement>('.reveal, [data-reveal-line]'))
+    .filter((el) => el.getBoundingClientRect().bottom > 0)
+    .sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top)
+  targets.forEach((el, i) => el.style.setProperty('--leave-delay', `${Math.min(MAX_STAGGER_MS, i * STAGGER_MS)}ms`))
+  root.dataset.leaving = '1'
+  return Math.min(MAX_STAGGER_MS, targets.length * STAGGER_MS) + LEAVE_MS
+}
 
 function triggerNavigate() {
   if (navigated) return
   navigated = true
+  const wait = dismantlePage()
   setState({ pull: DRAG_THRESHOLD, tensioned: false, dragging: false, aligned: true })
-  setTimeout(() => navigateCallback?.(), ALIGN_SETTLE_MS)
+  setTimeout(() => navigateCallback?.(), wait)
 }
 
 // Tippen auf den Fächer löst dieselbe Navigation aus wie Ziehen/Schwung: der

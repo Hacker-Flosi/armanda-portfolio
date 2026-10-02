@@ -173,6 +173,7 @@ export function MaskRevealText({
         lines.map((line, i) => (
           <div key={i} style={{ overflow: 'hidden', marginTop: i === 0 ? 0 : overlapMargin }}>
             <div
+              data-reveal-line
               style={{
                 whiteSpace: 'nowrap',
                 textIndent: i === 0 ? indent : undefined,

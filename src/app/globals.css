@@ -363,56 +363,19 @@ html[data-transition='down']::view-transition-new(root) {
   }
 }
 
-/* Fächer-Übergang (Info -> Werke und zurück): die Fächerkarten wandern in
-   ihre Zielbilder; die Seite dahinter blendet nur weich über. Die Bilder
-   füllen ihre Gruppe (object-fit), statt bei anderem Seitenverhältnis
-   gestreckt zu werden. */
-html[data-transition='fan']::view-transition-group(*) {
-  animation-duration: 0.85s;
-  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+/* Abbau (Fächer-Übergang): die Komponenten der alten Seite fahren nacheinander
+   heraus (Verzögerung pro Element per --leave-delay, von unten nach oben).
+   Danach folgt der Seitenwechsel, und die neue Seite baut sich mit ihren
+   eigenen Reveal-Animationen wieder auf. Keine Überblendung. */
+html[data-leaving] .reveal {
+  opacity: 0 !important;
+  transform: translateY(-32px) !important;
+  transition: opacity 0.3s ease var(--leave-delay, 0s), transform 0.45s cubic-bezier(0.5, 0, 0.75, 0) var(--leave-delay, 0s) !important;
 }
-html[data-transition='fan']::view-transition-old(*),
-html[data-transition='fan']::view-transition-new(*) {
-  height: 100%;
-  object-fit: cover;
-}
-/* Seite dahinter: keine Überblendung (die erzeugt halbtransparente Flächen
-   und Flimmern). Die alte Seite bleibt deckend stehen, die neue deckt sie
-   per Clip-Path-Vorhang von unten vollflächig ab. */
-html[data-transition='fan']::view-transition-image-pair(root) {
-  isolation: auto;
-}
-html[data-transition='fan']::view-transition-old(root),
-html[data-transition='fan']::view-transition-new(root) {
-  mix-blend-mode: normal;
-  opacity: 1;
-}
-html[data-transition='fan']::view-transition {
-  background: var(--bar-bg);
-}
-html[data-transition='fan']::view-transition-old(root) {
-  animation: vt-fan-old 0.9s cubic-bezier(0.32, 0.72, 0, 1) both;
-}
-html[data-transition='fan']::view-transition-new(root) {
-  animation: vt-fan-new 0.95s cubic-bezier(0.32, 0.72, 0, 1) both;
-}
-/* Die alte Seite weicht zurück (kleiner, tiefer, dunkler — alles deckend),
-   die neue schiebt sich mit abgerundeter Kante von unten darüber. */
-@keyframes vt-fan-old {
-  to {
-    transform: translateY(-4%) scale(0.94);
-    filter: brightness(0.55);
-  }
-}
-@keyframes vt-fan-new {
-  from {
-    clip-path: inset(100% 0 0 0 round 24px);
-    transform: translateY(7%);
-  }
-  to {
-    clip-path: inset(0 0 0 0 round 0px);
-    transform: none;
-  }
+html[data-leaving] [data-reveal-line] {
+  opacity: 0 !important;
+  transform: translateY(-115%) !important;
+  transition: transform 0.4s cubic-bezier(0.5, 0, 0.75, 0) var(--leave-delay, 0s), opacity 0.25s ease var(--leave-delay, 0s) !important;
 }
 
 ::view-transition-group(design-header),
