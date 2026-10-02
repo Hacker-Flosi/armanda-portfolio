@@ -104,6 +104,7 @@ export type DesignInterest = {
 }
 
 export type DesignAbout = {
+  artText?: string
   spotifyPlaylistUrl?: string
   loves?: string
   looking?: string
@@ -156,7 +157,7 @@ const designInterestQuery = /* groq */ `*[_type == "designInterest"] | order(ord
   "aspectRatio": image.asset->metadata.dimensions.aspectRatio
 }`
 
-const designAboutQuery = /* groq */ `*[_type == "designAbout"][0]{ spotifyPlaylistUrl, loves, looking, process, introText, "introVideoUrl": introVideo.asset->url, bio, approach, services, clients, industries }`
+const designAboutQuery = /* groq */ `*[_type == "designAbout"][0]{ artText, spotifyPlaylistUrl, loves, looking, process, introText, "introVideoUrl": introVideo.asset->url, bio, approach, services, clients, industries }`
 
 export async function getArtworks(): Promise<Artwork[]> {
   return client.fetch(artworksQuery)

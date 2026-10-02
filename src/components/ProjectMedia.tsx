@@ -42,7 +42,7 @@ export function ProjectMedia({
             type="button"
             aria-label={`${title} — Medium ${index + 1} vergrössern`}
             onClick={() => setOpen(index)}
-            className="relative shrink-0 overflow-hidden bg-white/[0.04] h-[min(100%,calc(88vw/var(--ratio)))] md:h-full group"
+            className="relative shrink-0 overflow-hidden bg-[var(--ink)]/[0.06] h-[min(100%,calc(88vw/var(--ratio)))] md:h-full group"
             style={{ aspectRatio: tile.kind === 'video' ? 16 / 9 : (tile.aspectRatio ?? 1.3), ['--ratio' as string]: tile.kind === 'video' ? 16 / 9 : (tile.aspectRatio ?? 1.3) }}
           >
             {tile.kind === 'video' ? (

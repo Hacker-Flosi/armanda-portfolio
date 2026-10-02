@@ -1,14 +1,15 @@
-'use client'
+"use client";
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import Image from 'next/image'
-import { useLightbox } from '@/components/Lightbox'
-import { ParallaxReveal } from '@/components/ParallaxReveal'
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { TouchEvent } from "react";
+import Image from "next/image";
+import { useLightbox } from "@/components/Lightbox";
+import { ParallaxReveal } from "@/components/ParallaxReveal";
 
-const INTERVAL_MS = 4500
-const FADE_MS = 600
+const INTERVAL_MS = 4500;
+const LEAVE_MS = 180;
 
-export type CarouselImage = { src: string; aspectRatio: number | null }
+export type CarouselImage = { src: string; aspectRatio: number | null };
 
 export function MobileImageCarousel({
   images,
@@ -17,111 +18,168 @@ export function MobileImageCarousel({
   startAt = 0,
   viewTransitionName,
 }: {
-  images: CarouselImage[]
-  alt: string
-  globalIndices: number[]
-  startAt?: number
-  viewTransitionName?: string
+  images: CarouselImage[];
+  alt: string;
+  globalIndices: number[];
+  startAt?: number;
+  viewTransitionName?: string;
 }) {
-  const { open } = useLightbox()
-  // "previous" bleibt kurz unter dem neuen Bild stehen, damit es weich
-  // überblendet statt hart umzuschalten.
-  const [slide, setSlide] = useState<{ current: number; previous: number | null }>({
-    current: startAt,
-    previous: null,
-  })
-  const [inView, setInView] = useState(false)
-  const [reduceMotion, setReduceMotion] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const fadeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { open } = useLightbox();
+  // Wechsel wie im Grafik-Portfolio: das aktuelle Bild blendet kurz aus, dann
+  // baut sich das nächste mit der Reveal-Bewegung auf (keine Überlagerung).
+  const [index, setIndex] = useState(startAt);
+  const [leaving, setLeaving] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   // Fest auf das Start-Bild verankert, damit der Container beim Durchwechseln
   // nicht je nach Seitenverhältnis des aktuellen Bilds springt — andere
   // Formate werden stattdessen innerhalb der festen Box eingepasst.
-  const boxAspectRatio = images[startAt]?.aspectRatio ?? 1.3
+  const boxAspectRatio = images[startAt]?.aspectRatio ?? 1.3;
 
   useEffect(() => {
-    setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  }, [])
+    setReduceMotion(
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    );
+  }, []);
 
   useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.6 })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.6 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
-  const advancing = inView && !reduceMotion && images.length > 1
+  const advancing = inView && !reduceMotion && images.length > 1;
+  const count = images.length;
 
-  useEffect(() => {
-    if (!advancing) return
-    const timer = setInterval(() => {
-      setSlide((s) => ({ current: (s.current + 1) % images.length, previous: s.current }))
-      if (fadeTimeout.current) clearTimeout(fadeTimeout.current)
-      fadeTimeout.current = setTimeout(() => setSlide((s) => ({ ...s, previous: null })), FADE_MS)
-    }, INTERVAL_MS)
-    return () => clearInterval(timer)
-  }, [advancing, images.length])
+  function go(next: number) {
+    const target = (next + count) % count;
+    if (target === index || leaving) return;
+    setLeaving(true);
+    window.setTimeout(
+      () => {
+        setIndex(target);
+        setLeaving(false);
+      },
+      reduceMotion ? 0 : LEAVE_MS,
+    );
+  }
 
-  useEffect(() => {
-    return () => {
-      if (fadeTimeout.current) clearTimeout(fadeTimeout.current)
-    }
-  }, [])
+  function onTouchStart(e: TouchEvent) {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  }
+  function onTouchEnd(e: TouchEvent) {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(t.clientY - start.y))
+      go(index + (dx < 0 ? 1 : -1));
+  }
 
-  const { current: index, previous: previousIndex } = slide
-  const current = images[index]
-  const previous = previousIndex !== null ? images[previousIndex] : null
+  const current = images[index];
   const style = useMemo(
     () => ({ aspectRatio: boxAspectRatio, viewTransitionName }),
-    [boxAspectRatio, viewTransitionName]
-  )
-  if (!current) return null
+    [boxAspectRatio, viewTransitionName],
+  );
+  if (!current) return null;
 
   return (
-    <div ref={containerRef} className="sm:hidden relative w-full mx-auto max-h-[88dvh] overflow-hidden" style={style}>
+    <div
+      ref={containerRef}
+      className="sm:hidden relative w-full mx-auto max-h-[88dvh] overflow-hidden bg-[var(--bg)]"
+      style={style}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       <ParallaxReveal className="absolute inset-0">
-        <button
-          type="button"
-          onClick={() => open(globalIndices[index])}
-          aria-label={`${alt} — Bild vergrössern`}
-          className="absolute inset-0 w-full h-full cursor-zoom-in"
+        <div
+          className="absolute inset-0"
+          style={{
+            opacity: leaving ? 0 : 1,
+            transition: `opacity ${LEAVE_MS}ms ease-in`,
+          }}
         >
-          {previous && (
-            <Image src={previous.src} alt={alt} fill sizes="100vw" className="object-contain object-left" />
-          )}
-          <Image
-            key={index}
-            src={current.src}
-            alt={alt}
-            fill
-            sizes="100vw"
-            className={`object-contain object-left ${previous && !reduceMotion ? 'carousel-fade-in' : ''}`}
-            style={previous && !reduceMotion ? { animationDuration: `${FADE_MS}ms` } : undefined}
-          />
-        </button>
+          <div key={index} className="absolute inset-0 carousel-reveal">
+            <Image
+              src={current.src}
+              alt={alt}
+              fill
+              sizes="100vw"
+              draggable={false}
+              className="object-contain object-left"
+            />
+          </div>
+        </div>
       </ParallaxReveal>
 
-      {images.length > 1 && (
-        <div className="absolute top-2 inset-x-2 flex gap-1 pointer-events-none">
+      <button
+        type="button"
+        aria-label={`${alt} — nächstes Bild`}
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const leftThird = e.clientX - rect.left < rect.width / 3;
+          go(index + (leftThird ? -1 : 1));
+        }}
+        className="absolute inset-0 z-[1]"
+      />
+      <button
+        type="button"
+        aria-label={`${alt} — Bild vergrössern`}
+        onClick={() => open(globalIndices[index])}
+        className="absolute right-3 top-6 z-[3] w-10 h-10 rounded-full bg-black/55 text-white flex items-center justify-center backdrop-blur"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          aria-hidden
+        >
+          <path d="M9.5 2H14v4.5M6.5 14H2V9.5M14 2L9 7M2 14l5-5" />
+        </svg>
+      </button>
+
+      {count > 1 && (
+        <div className="absolute top-2 inset-x-2 z-[2] flex gap-1">
           {images.map((_, i) => (
-            <div key={i} className="h-0.5 flex-1 rounded-full bg-white/35 overflow-hidden">
-              {i < index && <div className="h-full w-full bg-white" />}
-              {i === index &&
-                (advancing ? (
-                  <div
-                    key={index}
-                    className="h-full bg-white carousel-fill"
-                    style={{ animationDuration: `${INTERVAL_MS}ms` }}
-                  />
-                ) : (
-                  <div className="h-full w-full bg-white" />
-                ))}
-            </div>
+            <button
+              key={i}
+              type="button"
+              aria-label={`Bild ${i + 1} von ${count}`}
+              onClick={() => go(i)}
+              className="flex-1 h-5 flex items-start"
+            >
+              <span className="relative block w-full h-0.5 rounded-full bg-white/35 overflow-hidden">
+                {i < index && <span className="absolute inset-0 bg-white" />}
+                {i === index &&
+                  (advancing ? (
+                    <span
+                      key={index}
+                      className="absolute inset-y-0 left-0 bg-white carousel-fill"
+                      style={{ animationDuration: `${INTERVAL_MS}ms` }}
+                      onAnimationEnd={() => go(index + 1)}
+                    />
+                  ) : (
+                    <span className="absolute inset-0 bg-white" />
+                  ))}
+              </span>
+            </button>
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }

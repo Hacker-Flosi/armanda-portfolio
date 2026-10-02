@@ -6,7 +6,9 @@ export function SiteHeader() {
       <Link href="/" className="font-medium">
         Armanda Asani
       </Link>
-      <Link href="/info">Info</Link>
+      <nav className="flex items-center gap-4">
+        <Link href="/info">Info</Link>
+      </nav>
     </header>
   )
 }

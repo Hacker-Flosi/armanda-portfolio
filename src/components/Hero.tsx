@@ -53,6 +53,11 @@ export function Hero({
         videoRef.current.style.transform = `scale(${1 - progress * 0.06})`
         videoRef.current.style.borderRadius = `${progress * 28}px`
         videoRef.current.style.setProperty('--hero-par', `${progress * 70}px`)
+        // Die Video-Icons folgen dem sichtbaren Teil der Maske: sie bleiben unter
+        // dem Header im Bild, solange das Video noch zu sehen ist.
+        const frame = videoRef.current.getBoundingClientRect()
+        const shift = Math.max(0, Math.min(frame.height - 72, 40 - frame.top))
+        videoRef.current.style.setProperty('--icon-shift', `${shift}px`)
       }
       if (cueRef.current) cueRef.current.style.opacity = String(Math.max(0, 1 - progress * 4))
     }

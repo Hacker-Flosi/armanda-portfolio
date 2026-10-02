@@ -31,7 +31,7 @@ export function PhotoStrip({ photos }: { photos: PhotoItem[] }) {
               type="button"
               aria-label={`${photo.title} vergrössern`}
               onClick={() => setOpen(index)}
-              className="group relative shrink-0 overflow-hidden bg-white/[0.04] h-[min(100%,calc(88vw/var(--ratio)))] md:h-full"
+              className="group relative shrink-0 overflow-hidden bg-[var(--ink)]/[0.06] h-[min(100%,calc(88vw/var(--ratio)))] md:h-full"
               style={{ aspectRatio: photo.aspectRatio ?? 1, ['--ratio' as string]: photo.aspectRatio ?? 1 }}
             >
               <Image

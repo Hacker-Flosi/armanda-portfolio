@@ -86,7 +86,7 @@ export function MobileProjectCarousel({
   return (
     <div
       ref={rootRef}
-      className="relative w-full h-full overflow-hidden bg-black"
+      className="relative w-full h-full overflow-hidden bg-[var(--bg)]"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -121,6 +121,10 @@ export function MobileProjectCarousel({
       </button>
 
       {count > 1 && (
+        <div className="absolute top-0 inset-x-0 z-[2] h-16 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
+      )}
+
+      {count > 1 && (
         <div className="absolute top-2 inset-x-3 z-[2] flex gap-1">
           {items.map((item, i) => (
             <button
@@ -149,7 +153,7 @@ export function MobileProjectCarousel({
         </div>
       )}
 
-      {current.caption && <span className="absolute left-3 bottom-3 z-[2] text-xs text-white/85">{current.caption}</span>}
+      {current.caption && <span className="absolute left-3 bottom-3 z-[2] text-xs text-white h-6 px-2.5 inline-flex items-center rounded-full bg-black/45 backdrop-blur">{current.caption}</span>}
     </div>
   )
 }

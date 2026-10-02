@@ -46,11 +46,17 @@ export function MobileArchiveReel({
           card.style.transform = `translateY(${t * 108}%) scale(${1 - Math.min(1, delta) * 0.04})`
           card.style.opacity = delta > 1.05 ? '0' : '1'
           card.style.filter = 'none'
+          const veil = card.querySelector<HTMLElement>('[data-veil]')
+          if (veil) veil.style.opacity = '0'
         } else {
           const back = Math.min(1, -delta)
-          card.style.transform = `translateY(${-back * 5}%) scale(${1 - back * 0.08})`
-          card.style.opacity = String(1 - back * 0.75)
-          card.style.filter = `blur(${back * 4}px)`
+          card.style.transform = `scale(${1 - back * 0.06})`
+          // Vorherige Karten bleiben deckend; ein Schleier in der Seitenfarbe
+          // (im hellen Modus heller, im dunklen dunkler) nimmt ihnen den Fokus.
+          card.style.opacity = back > 1.3 ? '0' : '1'
+          card.style.filter = 'none'
+          const veil = card.querySelector<HTMLElement>('[data-veil]')
+          if (veil) veil.style.opacity = String(Math.min(1, back) * 0.6)
         }
       })
 
@@ -79,7 +85,7 @@ export function MobileArchiveReel({
     >
       <div
         ref={stageRef}
-        className="sticky overflow-hidden px-3 pb-3 pt-1"
+        className="sticky overflow-hidden px-3 pb-3 pt-3"
         style={{ top: HEADER_PX, height: `calc(100dvh - ${HEADER_PX * 2}px)` }}
       >
         <div className="relative w-full h-full">
@@ -89,7 +95,7 @@ export function MobileArchiveReel({
               ref={(el) => {
                 cardRefs.current[i] = el
               }}
-              className="absolute inset-0 overflow-hidden rounded-[22px] bg-[#161616] will-change-transform"
+              className="absolute inset-0 overflow-hidden rounded-[22px] bg-[var(--bg)] will-change-transform"
               style={{ zIndex: i, transform: 'translateY(108%)' }}
             >
               {tile.kind === 'video' ? (
@@ -99,6 +105,7 @@ export function MobileArchiveReel({
               )}
               <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent" />
               <span className="absolute left-4 bottom-4 text-sm text-white">{tile.label}</span>
+              <div data-veil className="absolute inset-0 bg-[var(--bg)] pointer-events-none" style={{ opacity: 0 }} />
             </div>
           ))}
 
@@ -123,6 +130,7 @@ export function MobileArchiveReel({
                 <span className="flex items-center justify-center w-14 h-14 rounded-full bg-[var(--bg)] text-[var(--ink)] text-xl">→</span>
               </span>
             </button>
+            <div data-veil className="absolute inset-0 bg-[var(--bg)] pointer-events-none" style={{ opacity: 0 }} />
           </div>
 
           <div className="absolute left-4 top-4 z-[50] flex items-center gap-3 pointer-events-none">

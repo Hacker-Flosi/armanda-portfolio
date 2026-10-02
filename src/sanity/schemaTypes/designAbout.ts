@@ -61,6 +61,13 @@ export const designAbout = defineType({
       rows: 5,
     }),
     defineField({
+      name: 'artText',
+      title: 'Meine Kunst — Text (Ich-Form)',
+      type: 'text',
+      rows: 4,
+      description: 'Kurzer Text, der auf die Kunst-Seite überleitet. Die Werke darunter kommen automatisch aus dem Kunst-Portfolio.',
+    }),
+    defineField({
       name: 'looking',
       title: 'Was ich suche (Ich-Form)',
       type: 'text',

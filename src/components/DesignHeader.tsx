@@ -11,9 +11,12 @@ export async function DesignHeader() {
         Armanda Asani
       </DesignNavLink>
       <span className="hidden sm:inline">Verfügbar Oktober 26</span>
-      <span className="sm:hidden">Ab Okt. 26</span>
       <nav className="flex items-center gap-4">
-        {settings?.cvUrl && <CvButton />}
+        {settings?.cvUrl && (
+          <span className="hidden sm:inline">
+            <CvButton />
+          </span>
+        )}
         <DesignNavLink href="/design/info" variant="up">
           Info
         </DesignNavLink>

@@ -61,7 +61,7 @@ export function ProjectClusters({ timeline }: { timeline: TimelineView }) {
                     return (
                       <div
                         key={item.key}
-                        className="absolute inset-0 overflow-hidden bg-white/[0.06] transition-transform duration-500 ease-out"
+                        className="absolute inset-0 overflow-hidden bg-[var(--ink)]/[0.08] transition-transform duration-500 ease-out"
                         style={{
                           transform: `translate(${depth * step}px, ${-depth * step}px) scale(${1 - depth * 0.04})`,
                           zIndex: layers.length - depth,
@@ -103,7 +103,7 @@ export function ProjectClusters({ timeline }: { timeline: TimelineView }) {
               type="button"
               aria-label={`${item.title} ${item.year}`}
               onClick={() => setOpen(index)}
-              className="relative shrink-0 overflow-hidden bg-white/[0.04] h-[min(100%,calc(88vw/var(--ratio)))] md:h-full group"
+              className="relative shrink-0 overflow-hidden bg-[var(--ink)]/[0.06] h-[min(100%,calc(88vw/var(--ratio)))] md:h-full group"
               style={{ aspectRatio: item.kind === 'video' ? 16 / 9 : (item.aspectRatio ?? 1.3), ['--ratio' as string]: item.kind === 'video' ? 16 / 9 : (item.aspectRatio ?? 1.3) }}
             >
               {item.kind === 'video' ? (

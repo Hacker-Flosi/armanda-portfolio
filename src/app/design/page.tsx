@@ -1,4 +1,3 @@
-import { DARK_THEME } from '@/lib/theme'
 import { ResolveFanTransition } from '@/components/ResolveFanTransition'
 import { DesignHeader } from '@/components/DesignHeader'
 import { SiteFooter } from '@/components/SiteFooter'
@@ -50,7 +49,7 @@ export default async function DesignPage() {
     <>
       <ResolveFanTransition />
       <DesignHeader />
-      <main className="flex-1 bg-[var(--bg)] text-[var(--ink)]" style={DARK_THEME}>
+      <main className="flex-1 bg-[var(--bg)] text-[var(--ink)]">
         <Hero introText={about?.introText} videoSrc={about?.introVideoUrl} mailHref={mailHref} mailAddress={settings?.mailAddress} />
         <div>
           <DesignProjects works={works} />
@@ -63,7 +62,7 @@ export default async function DesignPage() {
         <Spielwiese playTiles={playTiles} archiveTiles={archiveTiles} />
         <ContactSection mailHref={mailHref} mailAddress={settings?.mailAddress} hasCv={Boolean(settings?.cvUrl)} />
       </main>
-      <SiteFooter />
+      <SiteFooter hidePrints />
     </>
   )
 }

@@ -10,7 +10,7 @@ type EmbedController = {
   pause: () => void
   togglePlay: () => void
   destroy: () => void
-  addListener: (event: string, callback: () => void) => void
+  addListener: (event: string, callback: (e: { data?: { isPaused?: boolean } }) => void) => void
 }
 type SpotifyIFrameApi = {
   createController: (
@@ -71,6 +71,9 @@ export function RecordCrate({ records }: { records: RecordItem[] }) {
   const [active, setActive] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [apiFailed, setApiFailed] = useState(false)
+  const [needsTap, setNeedsTap] = useState(false)
+  const played = useRef(false)
+  const tapTimer = useRef<number | undefined>(undefined)
   const stage = useRef<HTMLDivElement>(null)
   const embedHost = useRef<HTMLDivElement>(null)
   const controller = useRef<EmbedController | null>(null)
@@ -79,6 +82,8 @@ export function RecordCrate({ records }: { records: RecordItem[] }) {
 
   const clamp = (i: number) => Math.min(records.length - 1, Math.max(0, i))
   const stop = () => {
+    window.clearTimeout(tapTimer.current)
+    setNeedsTap(false)
     setPlaying(false)
     controller.current?.pause()
   }
@@ -113,6 +118,16 @@ export function RecordCrate({ records }: { records: RecordItem[] }) {
   )
 
   async function startTrack(uri: string) {
+    // Auf Handys erlaubt der Browser den Start per Skript oft nicht: kommt
+    // nach kurzer Zeit keine Wiedergabe, wird ein Hinweis zum Tippen gezeigt.
+    played.current = false
+    window.clearTimeout(tapTimer.current)
+    tapTimer.current = window.setTimeout(() => {
+      if (!played.current) setNeedsTap(true)
+    }, 2200)
+    if (window.innerWidth < 640) {
+      window.setTimeout(() => embedHost.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 150)
+    }
     try {
       const api = await loadSpotifyApi()
       if (controller.current) {
@@ -128,6 +143,12 @@ export function RecordCrate({ records }: { records: RecordItem[] }) {
       api.createController(el, { uri, width: '100%', height: 152 }, (c) => {
         controller.current = c
         c.addListener('ready', () => c.play())
+        c.addListener('playback_update', (e) => {
+          if (e.data?.isPaused === false) {
+            played.current = true
+            setNeedsTap(false)
+          }
+        })
       })
     } catch {
       setApiFailed(true)
@@ -269,29 +290,14 @@ export function RecordCrate({ records }: { records: RecordItem[] }) {
         })}
       </div>
 
-      <div key={current.key} className="archive-tile flex flex-wrap items-end justify-between gap-x-10 gap-y-3 max-w-4xl">
-        <div className="flex flex-col gap-1">
-          <span className="flex items-center gap-4 font-medium" style={{ fontSize: 'clamp(1.5rem, 1rem + 2vw, 2.75rem)', letterSpacing: '-0.03em' }}>
-            {current.title}
-            {playing && (
-              <span aria-hidden className="flex items-end gap-[3px] h-5">
-                {[0, 1, 2, 3].map((bar) => (
-                  <span key={bar} className="eq-bar w-[3px] bg-current rounded-full" style={{ animationDelay: `${bar * 0.18}s` }} />
-                ))}
-              </span>
-            )}
-          </span>
-          <span className="text-[var(--ink-muted)]">{[current.artist, current.year].filter(Boolean).join(' · ')}</span>
-        </div>
-        {current.note && <p className="max-w-md text-sm text-[var(--ink-muted)]">{current.note}</p>}
-        <span className="text-xs text-[var(--ink-muted)]">
-          {active + 1} / {records.length} · ziehen, scrollen oder anklicken
-        </span>
-      </div>
-
       {currentUri && (
         <div className="flex flex-col gap-3 max-w-xl">
           {!playing && <span className="text-sm text-[var(--ink-muted)]">Platte anklicken — sie wird aufgelegt und der Track startet.</span>}
+          {playing && needsTap && (
+            <span className="archive-tile inline-flex items-center gap-2 self-start h-9 px-4 rounded-full bg-[var(--ink)] text-[var(--bg)] text-sm font-medium">
+              Tippe im Player auf ▶, damit der Track startet
+            </span>
+          )}
           <div ref={embedHost} className={playing ? 'archive-tile' : 'hidden'} />
           {playing && apiFailed && (
             <iframe
@@ -311,6 +317,26 @@ export function RecordCrate({ records }: { records: RecordItem[] }) {
           </span>
         </div>
       )}
+
+      <div key={current.key} className="archive-tile flex flex-wrap items-end justify-between gap-x-10 gap-y-3 max-w-4xl">
+        <div className="flex flex-col gap-1">
+          <span className="flex items-center gap-4 font-medium" style={{ fontSize: 'clamp(1.5rem, 1rem + 2vw, 2.75rem)', letterSpacing: '-0.03em' }}>
+            {current.title}
+            {playing && (
+              <span aria-hidden className="flex items-end gap-[3px] h-5">
+                {[0, 1, 2, 3].map((bar) => (
+                  <span key={bar} className="eq-bar w-[3px] bg-current rounded-full" style={{ animationDelay: `${bar * 0.18}s` }} />
+                ))}
+              </span>
+            )}
+          </span>
+          <span className="text-[var(--ink-muted)]">{[current.artist, current.year].filter(Boolean).join(' · ')}</span>
+        </div>
+        {current.note && <p className="max-w-md text-sm text-[var(--ink-muted)]">{current.note}</p>}
+        <span className="text-xs text-[var(--ink-muted)]">
+          {active + 1} / {records.length} · ziehen, scrollen oder anklicken
+        </span>
+      </div>
     </div>
   )
 }

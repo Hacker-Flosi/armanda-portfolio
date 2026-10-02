@@ -6,9 +6,10 @@ import { Reveal } from '@/components/Reveal'
 import { MaskRevealText } from '@/components/MaskRevealText'
 import { InfoNav } from '@/components/InfoNav'
 import { AbseitsModule } from '@/components/AbseitsModule'
+import { ArtSectionPreview } from '@/components/ArtSectionPreview'
+import { ContactLink } from '@/components/ContactLink'
 import { ContactSection } from '@/components/ContactSection'
-import { DARK_THEME } from '@/lib/theme'
-import { getDesignAbout, getDesignInterests, getSiteSettings } from '@/sanity/lib/queries'
+import { getArtworks, getDesignAbout, getDesignInterests, getSiteSettings } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { getSpotifyMeta } from '@/lib/spotifyOembed'
 
@@ -78,7 +79,27 @@ function Tags({ title, items }: { title: string; items?: string[] }) {
 }
 
 export default async function DesignInfoPage() {
-  const [about, interests, settings] = await Promise.all([getDesignAbout(), getDesignInterests(), getSiteSettings()])
+  const [about, interests, settings, artworks] = await Promise.all([
+    getDesignAbout(),
+    getDesignInterests(),
+    getSiteSettings(),
+    getArtworks(),
+  ])
+  const artPreview = artworks.slice(0, 4).flatMap((artwork) => {
+    const cover = artwork.images?.find((entry) => entry.isMobileCover) ?? artwork.images?.[0]
+    if (!cover) return []
+    return [
+      {
+        key: artwork._id,
+        title: artwork.title,
+        aspectRatio: cover.aspectRatio,
+        src: urlFor(cover.image).width(700).fit('max').auto('format').url(),
+      },
+    ]
+  })
+  const artText =
+    about?.artText ??
+    'Neben dem Grafikdesign male ich. Dort liegt mein Ursprung — Farbe, Fläche und Spannung, die auch in meine Gestaltung einfliessen.'
   const mailHref = settings?.mailAddress
     ? `mailto:${settings.mailAddress}${settings.mailSubject ? `?subject=${encodeURIComponent(settings.mailSubject)}` : ''}`
     : undefined
@@ -120,6 +141,7 @@ export default async function DesignInfoPage() {
     { id: 'arbeiten', label: 'So arbeite ich', show: Boolean(about?.approach) },
     { id: 'beruf', label: 'Was mir gefällt', show: Boolean(about?.loves) },
     { id: 'suche', label: 'Was ich suche', show: Boolean(about?.looking) },
+    { id: 'kunst', label: 'Meine Kunst', show: true },
     { id: 'privat', label: 'Abseits der Arbeit', show: photos.length + records.length > 0 || Boolean(playlistUrl) },
   ].filter((section) => section.show)
   const number = (id: string) => sections.findIndex((section) => section.id === id) + 1
@@ -130,7 +152,7 @@ export default async function DesignInfoPage() {
     <>
       <ResolveFanTransition />
       <DesignHeader />
-      <main className="flex-1 bg-[var(--bg)] text-[var(--ink)]" style={DARK_THEME}>
+      <main className="flex-1 bg-[var(--bg)] text-[var(--ink)]">
         <div className="px-4 pt-12 md:grid md:grid-cols-[190px_minmax(0,1fr)] md:gap-12">
           <InfoNav items={sections.map(({ id, label }) => ({ id, label }))} />
 
@@ -179,6 +201,14 @@ export default async function DesignInfoPage() {
                 </Reveal>
               </Section>
             )}
+
+            <Section id="kunst" index={number('kunst')} title="Meine Kunst">
+              <Text paragraphs={paragraphsOf(artText)} />
+              <ArtSectionPreview works={artPreview} />
+              <div style={DISPLAY}>
+                <ContactLink href="/" label="Zur Kunst" hoverLabel="Meine Malerei ansehen" />
+              </div>
+            </Section>
           </div>
         </div>
 
@@ -205,7 +235,7 @@ export default async function DesignInfoPage() {
 
         <ContactSection mailHref={mailHref} mailAddress={settings?.mailAddress} hasCv={Boolean(settings?.cvUrl)} />
       </main>
-      <SiteFooter />
+      <SiteFooter hidePrints />
     </>
   )
 }

@@ -25,7 +25,7 @@ function StatusCell({ status }: { status?: Artwork['status'] }) {
 function ArtworkImages({ artwork, indices }: { artwork: Artwork; indices: number[] }) {
   if (!artwork.images || artwork.images.length === 0) {
     return (
-      <div className="w-full aspect-[4/3] flex items-center justify-center text-sm text-[var(--ink-muted)] bg-black/[0.03]">
+      <div className="w-full aspect-[4/3] flex items-center justify-center text-sm text-[var(--ink-muted)] bg-[var(--ink)]/[0.05]">
         Bild folgt
       </div>
     )
@@ -118,7 +118,7 @@ function ArtworkRow({ artwork, indices }: { artwork: Artwork; indices: number[] 
 }
 
 export function ArtworkList({ artworks }: { artworks: Artwork[] }) {
-  const items: { fullSrc: string; alt: string }[] = []
+  const items: { fullSrc: string; alt: string; year?: string; note?: string }[] = []
   const indexMap: number[][] = artworks.map((artwork) => {
     const indices: number[] = []
     for (const entry of artwork.images ?? []) {
@@ -126,6 +126,8 @@ export function ArtworkList({ artworks }: { artworks: Artwork[] }) {
       items.push({
         fullSrc: urlFor(entry.image).width(2800).fit('max').auto('format').url(),
         alt: artwork.title,
+        year: artwork.year,
+        note: [artwork.medium, artwork.dimensions].filter(Boolean).join(' · ') || undefined,
       })
     }
     return indices

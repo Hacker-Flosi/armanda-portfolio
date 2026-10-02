@@ -11,6 +11,14 @@ function PlayIcon() {
   )
 }
 
+function FullscreenIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" />
+    </svg>
+  )
+}
+
 function RestartIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
@@ -35,7 +43,8 @@ function SoundIcon({ on }: { on: boolean }) {
 // Autoplay-Intro-Video. Desktop: ein Button folgt dem Cursor — erster Klick
 // startet das Video von vorne (mit Ton), jeder weitere schaltet den Ton
 // an/aus (Icon zeigt den Zustand). Der Ton geht beim Wegscrollen aus.
-// Neustart-Button oben rechts; mobil zusätzlich Ton an/aus unten rechts.
+// Desktop: oben rechts Vollbild und Neustart. Mobil: ein Play-Knopf in der
+// Mitte, der das Video mit Ton im Vollbild von vorne startet.
 export function IntroVideo({ src, poster, fill }: { src: string; poster?: string; fill?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -91,6 +100,36 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
     void video.play()
   }
 
+  // Vollbild: von vorne, mit Ton und den nativen Video-Bedienelementen. Beim
+  // Verlassen läuft das Video wieder stumm als Hintergrund weiter.
+  function enterFullscreen() {
+    const video = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null
+    if (!video) return
+    video.currentTime = 0
+    video.muted = false
+    setMuted(false)
+    void video.play()
+    if (video.requestFullscreen) void video.requestFullscreen().catch(() => {})
+    else video.webkitEnterFullscreen?.()
+  }
+
+  useEffect(() => {
+    const video = videoRef.current as (HTMLVideoElement & { webkitendfullscreen?: unknown }) | null
+    if (!video) return
+    function onExit() {
+      if (document.fullscreenElement) return
+      video!.muted = true
+      setMuted(true)
+      void video!.play().catch(() => {})
+    }
+    document.addEventListener('fullscreenchange', onExit)
+    video.addEventListener('webkitendfullscreen', onExit)
+    return () => {
+      document.removeEventListener('fullscreenchange', onExit)
+      video.removeEventListener('webkitendfullscreen', onExit)
+    }
+  }, [])
+
   function toggleSound() {
     const video = videoRef.current
     if (!video) return
@@ -129,7 +168,23 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
         }
       }}
     >
-      <div className="sticky top-12 z-10 h-0 flex justify-end pr-3 pointer-events-none">
+      <div
+        className="absolute top-0 right-0 z-10 flex gap-2 pr-3 pointer-events-none"
+        style={{ transform: 'translateY(var(--icon-shift, 0px))' }}
+      >
+        <button
+          type="button"
+          aria-label="Video im Vollbild abspielen"
+          onClick={(e) => {
+            e.stopPropagation()
+            enterFullscreen()
+          }}
+          onMouseEnter={() => setOverControls(true)}
+          onMouseLeave={() => setOverControls(false)}
+          className="pointer-events-auto mt-3 hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-[var(--bg)] text-[var(--ink)] sm:cursor-pointer"
+        >
+          <FullscreenIcon />
+        </button>
         <button
           type="button"
           aria-label="Video von vorne starten"
@@ -139,7 +194,7 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
           }}
           onMouseEnter={() => setOverControls(true)}
           onMouseLeave={() => setOverControls(false)}
-          className="pointer-events-auto mt-3 flex items-center justify-center w-12 h-12 rounded-full bg-[var(--bg)] text-[var(--ink)] sm:cursor-pointer"
+          className="pointer-events-auto mt-3 hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-[var(--bg)] text-[var(--ink)] sm:cursor-pointer"
         >
           <RestartIcon />
         </button>
@@ -157,6 +212,21 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
         playsInline
       />
 
+      {/* Mobil: ein einzelner Play-Knopf in der Mitte, startet das Video mit Ton im Vollbild. */}
+      <button
+        type="button"
+        aria-label="Video mit Ton im Vollbild abspielen"
+        onClick={(e) => {
+          e.stopPropagation()
+          enterFullscreen()
+        }}
+        className="sm:hidden absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-[72px] h-[72px] rounded-full bg-[var(--bg)]/90 text-[var(--ink)] backdrop-blur"
+      >
+        <span className="scale-[1.6] translate-x-[1px]">
+          <PlayIcon />
+        </span>
+      </button>
+
       <div
         ref={cursorRef}
         aria-hidden
@@ -165,18 +235,6 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
       >
         {started ? <SoundIcon on={!muted} /> : <PlayIcon />}
       </div>
-
-      <button
-        type="button"
-        aria-label={muted ? 'Ton einschalten' : 'Ton ausschalten'}
-        onClick={(e) => {
-          e.stopPropagation()
-          toggleSound()
-        }}
-        className="sm:hidden absolute bottom-3 right-3 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-[var(--bg)] text-[var(--ink)]"
-      >
-        <SoundIcon on={!muted} />
-      </button>
     </div>
   )
 }

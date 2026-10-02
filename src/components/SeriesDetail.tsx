@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { TouchEvent } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 
@@ -30,6 +31,22 @@ export function SeriesDetail({
   const [index, setIndex] = useState(startIndex)
   const [closing, setClosing] = useState(false)
   const item = items[index]
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+
+  function onTouchStart(e: TouchEvent) {
+    const t = e.touches[0]
+    touchStart.current = { x: t.clientX, y: t.clientY }
+  }
+  function onTouchEnd(e: TouchEvent) {
+    const start = touchStart.current
+    touchStart.current = null
+    if (!start || items.length < 2) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - start.x
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(t.clientY - start.y)) {
+      setIndex((i) => (i + (dx < 0 ? 1 : -1) + items.length) % items.length)
+    }
+  }
 
   const close = useCallback(() => {
     setClosing(true)
@@ -58,6 +75,8 @@ export function SeriesDetail({
       aria-label={item.title}
       className={`fixed inset-0 z-50 flex flex-col bg-[#0a0a0a]/95 text-[#f1f0eb] backdrop-blur ${closing ? 'archive-overlay-out' : 'archive-overlay-in'}`}
       onClick={close}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
     >
       <div className="flex items-center justify-between px-4 h-12 shrink-0">
         <span className="text-sm text-[#8a8a85]">
