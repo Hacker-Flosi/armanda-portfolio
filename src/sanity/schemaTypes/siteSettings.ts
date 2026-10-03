@@ -5,6 +5,14 @@ export const siteSettings = defineType({
   title: 'Site-Einstellungen',
   type: 'document',
   fields: [
+    defineField({
+      name: 'availability',
+      title: 'Verfügbarkeit',
+      type: 'string',
+      description:
+        'Erscheint im Header der Grafikseite und auf der Info-Seite, z.B. "Verfügbar Oktober 26". Leer lassen blendet den Hinweis aus.',
+      initialValue: 'Verfügbar Oktober 26',
+    }),
     defineField({ name: 'mailAddress', title: 'Mail-Adresse', type: 'string' }),
     defineField({ name: 'mailSubject', title: 'Mail-Betreff', type: 'string' }),
     defineField({ name: 'instagramUrl', title: 'Instagram-URL', type: 'url' }),

@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { nextOrder } from '../lib/nextOrder'
 
 export const designInterest = defineType({
   name: 'designInterest',
@@ -49,7 +50,9 @@ export const designInterest = defineType({
       description:
         'Bei Platten mit Spotify-Link kann das leer bleiben: dann wird das Cover automatisch von Spotify geholt.',
     }),
-    defineField({ name: 'order', title: 'Reihenfolge', type: 'number', validation: (rule) => rule.required() }),
+    defineField({ name: 'order', title: 'Reihenfolge', type: 'number',
+      description: 'Wird bei neuen Einträgen automatisch ans Ende gesetzt. Kleinere Zahl erscheint weiter oben.',
+      initialValue: nextOrder('designInterest'), validation: (rule) => rule.required() }),
   ],
   orderings: [{ title: 'Reihenfolge', name: 'orderAsc', by: [{ field: 'order', direction: 'asc' }] }],
   validation: (rule) =>

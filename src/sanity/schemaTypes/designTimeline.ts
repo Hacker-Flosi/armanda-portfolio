@@ -1,8 +1,9 @@
 import { defineField, defineType } from 'sanity'
+import { nextOrder } from '../lib/nextOrder'
 
 export const designTimeline = defineType({
   name: 'designTimeline',
-  title: 'Kunden-Zeitstrahl (z.B. Tsüri.ch)',
+  title: 'Kunde mit Serien (z.B. Tsüri.ch)',
   type: 'document',
   fields: [
     defineField({ name: 'title', title: 'Kunde / Titel', type: 'string', validation: (rule) => rule.required() }),
@@ -15,9 +16,9 @@ export const designTimeline = defineType({
     }),
     defineField({
       name: 'lanes',
-      title: 'Serien (Bahnen)',
+      title: 'Serien',
       type: 'array',
-      description: 'Jede Serie ist eine Bahn im Zeitstrahl, z.B. Plakatserie, Merch, Gutscheinhefte.',
+      description: 'Eine Serie fasst zusammengehörige Arbeiten zusammen, z.B. Plakatserie, Merch, Gutscheinhefte.',
       of: [
         {
           type: 'object',
@@ -48,7 +49,7 @@ export const designTimeline = defineType({
                       title: 'Video',
                       type: 'file',
                       options: { accept: 'video/*' },
-                      description: 'Entweder ein Bild ODER ein Video.',
+                      description: 'Entweder ein Bild ODER ein Video. Video: MP4 (H.264), möglichst unter 20 MB.',
                     }),
                   ],
                   validation: (rule) =>
@@ -75,6 +76,8 @@ export const designTimeline = defineType({
       name: 'order',
       title: 'Reihenfolge',
       type: 'number',
+      description: 'Wird bei neuen Einträgen automatisch ans Ende gesetzt. Kleinere Zahl erscheint weiter oben.',
+      initialValue: nextOrder('designTimeline'),
       validation: (rule) => rule.required(),
     }),
   ],

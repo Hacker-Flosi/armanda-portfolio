@@ -17,11 +17,15 @@ const CONTACT_PHRASE = 'schreib mir einfach'
 export function Hero({
   introText,
   videoSrc,
+  fullVideoSrc,
+  posterSrc,
   mailHref,
   mailAddress,
 }: {
   introText?: string
   videoSrc?: string
+  fullVideoSrc?: string
+  posterSrc?: string
   mailHref?: string
   mailAddress?: string
 }) {
@@ -108,7 +112,7 @@ export function Hero({
         )}
       </div>
 
-      {videoSrc && (
+      {(videoSrc || fullVideoSrc) && (
         <div className="relative flex-1 min-h-[50dvh]">
           <div
             ref={videoRef}
@@ -124,7 +128,7 @@ export function Hero({
                   'clip-path 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s',
               }}
             >
-              <IntroVideo src={videoSrc} fill />
+              <IntroVideo src={videoSrc} fullSrc={fullVideoSrc} poster={posterSrc} fill />
             </div>
           </div>
 

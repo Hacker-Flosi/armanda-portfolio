@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { nextOrder } from '../lib/nextOrder'
 
 export const artwork = defineType({
   name: 'artwork',
@@ -16,7 +17,7 @@ export const artwork = defineType({
       title: 'Slug',
       type: 'slug',
       options: { source: 'title' },
-      validation: (rule) => rule.required(),
+      hidden: true,
     }),
     defineField({
       name: 'images',
@@ -94,6 +95,7 @@ export const artwork = defineType({
       name: 'order',
       title: 'Reihenfolge',
       type: 'number',
+      initialValue: nextOrder('artwork'),
       description: 'Kleinere Zahl erscheint weiter oben in der Liste.',
       validation: (rule) => rule.required(),
     }),

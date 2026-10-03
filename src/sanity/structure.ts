@@ -24,8 +24,8 @@ export const structure: StructureResolver = (S) =>
         .title('Grafikdesign — Projekte')
         .child(S.documentTypeList('designWork').title('Projekte').defaultOrdering(byOrder)),
       S.listItem()
-        .title('Grafikdesign — Kunden-Zeitstrahl (z.B. Tsüri.ch)')
-        .child(S.documentTypeList('designTimeline').title('Kunden-Zeitstrahl').defaultOrdering(byOrder)),
+        .title('Grafikdesign — Kunde mit Serien (z.B. Tsüri.ch)')
+        .child(S.documentTypeList('designTimeline').title('Kunde mit Serien').defaultOrdering(byOrder)),
       S.listItem()
         .title('Grafikdesign — Spielwiese')
         .child(S.documentTypeList('designPlay').title('Spielwiese').defaultOrdering(byOrder)),

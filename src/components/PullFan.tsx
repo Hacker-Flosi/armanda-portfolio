@@ -80,8 +80,8 @@ export function PullFan({ items, href }: { items: PullFanItem[]; href: string })
                 opacity,
                 transition: dragging
                   ? 'none'
-                  : 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.45s ease',
-                transitionDelay: aligned ? `${Math.abs(offset) * 40}ms` : undefined,
+                  : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease',
+                transitionDelay: aligned ? `${Math.abs(offset) * 20}ms` : undefined,
               }}
             >
               <Image src={item.src} alt={item.alt} fill sizes="128px" className="object-cover" />

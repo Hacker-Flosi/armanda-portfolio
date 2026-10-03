@@ -40,22 +40,44 @@ function SoundIcon({ on }: { on: boolean }) {
   )
 }
 
-// Autoplay-Intro-Video. Desktop: ein Button folgt dem Cursor — erster Klick
-// startet das Video von vorne (mit Ton), jeder weitere schaltet den Ton
-// an/aus (Icon zeigt den Zustand). Der Ton geht beim Wegscrollen aus.
-// Desktop: oben rechts Vollbild und Neustart. Mobil: ein Play-Knopf in der
-// Mitte, der das Video mit Ton im Vollbild von vorne startet.
-export function IntroVideo({ src, poster, fill }: { src: string; poster?: string; fill?: boolean }) {
-  const videoRef = useRef<HTMLVideoElement>(null)
+// Intro-Video mit zwei Dateien: ein kurzer, stummer Loop läuft automatisch im
+// Hintergrund (schnell geladen); die lange Vollversion lädt nur ihre
+// Metadaten vor und wird erst beim Tippen/Klicken abgespielt. Ohne Vollversion
+// wird der Loop selbst mit Ton neu gestartet. Desktop: ein Button folgt dem
+// Cursor — erster Klick startet die Vollversion von vorne (mit Ton), jeder
+// weitere schaltet den Ton an/aus. Der Ton geht beim Wegscrollen aus und die
+// Seite fällt auf den Loop zurück. Oben rechts: Vollbild und Neustart. Mobil:
+// ein Play-Knopf in der Mitte startet die Vollversion im Vollbild.
+export function IntroVideo({
+  src,
+  fullSrc,
+  poster,
+  fill,
+}: {
+  src?: string
+  fullSrc?: string
+  poster?: string
+  fill?: boolean
+}) {
+  const loopSrc = src ?? fullSrc
+  const hasFull = Boolean(src && fullSrc)
+  const loopRef = useRef<HTMLVideoElement>(null)
+  const fullRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
   const target = useRef({ x: 0, y: 0 })
   const current = useRef({ x: 0, y: 0 })
   const frame = useRef<number | null>(null)
+  const modeRef = useRef<'loop' | 'full'>('loop')
+  const [mode, setMode] = useState<'loop' | 'full'>('loop')
   const [muted, setMuted] = useState(true)
   const [overVideo, setOverVideo] = useState(false)
   const [overControls, setOverControls] = useState(false)
   const [started, setStarted] = useState(false)
+  const [buffering, setBuffering] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  const activeVideo = () => (modeRef.current === 'full' ? fullRef.current : loopRef.current)
 
   useEffect(() => {
     function tick() {
@@ -71,70 +93,106 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
     }
   }, [])
 
+  function setSound(on: boolean) {
+    setMuted(!on)
+    const video = activeVideo()
+    if (video) video.muted = !on
+  }
+
+  // Zurück zum stummen Hintergrund-Loop.
+  function exitFull() {
+    if (modeRef.current === 'full') {
+      const full = fullRef.current
+      if (full) {
+        full.pause()
+        full.currentTime = 0
+      }
+      modeRef.current = 'loop'
+      setMode('loop')
+      setBuffering(false)
+      void loopRef.current?.play().catch(() => {})
+    }
+    const loop = loopRef.current
+    if (loop) loop.muted = true
+    setMuted(true)
+    setStarted(false)
+  }
+
+  // Vollversion starten (von vorne, mit Ton). Das Vollversions-Element hat
+  // seine Metadaten schon geladen, deshalb funktioniert auch Vollbild direkt
+  // aus dem Tipp heraus (iOS).
+  function startFull(options?: { fullscreen?: boolean }) {
+    const full = fullRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null
+    if (!full || !hasFull) {
+      // Nur ein Video vorhanden: den Loop selbst von vorne mit Ton abspielen.
+      const loop = loopRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null
+      if (!loop) return
+      loop.currentTime = 0
+      loop.muted = false
+      setMuted(false)
+      void loop.play()
+      if (options?.fullscreen) {
+        if (loop.requestFullscreen) void loop.requestFullscreen().catch(() => {})
+        else loop.webkitEnterFullscreen?.()
+      }
+      return
+    }
+    loopRef.current?.pause()
+    modeRef.current = 'full'
+    setMode('full')
+    setBuffering(true)
+    full.currentTime = 0
+    full.muted = false
+    setMuted(false)
+    void full.play().catch(() => {})
+    if (options?.fullscreen) {
+      if (full.requestFullscreen) void full.requestFullscreen().catch(() => {})
+      else full.webkitEnterFullscreen?.()
+    }
+  }
+
+  // Ton aus und zurück zum Loop, sobald das Video aus dem Bild scrollt.
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) return
-        const video = videoRef.current
-        if (video && !video.muted) {
-          video.muted = true
-          setMuted(true)
-        }
+        if (modeRef.current === 'full') exitFull()
+        else if (loopRef.current && !loopRef.current.muted) setSound(false)
       },
       { threshold: 0.3 }
     )
     observer.observe(el)
     return () => observer.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function restart(withSound: boolean) {
-    const video = videoRef.current
-    if (!video) return
-    video.currentTime = 0
-    if (withSound) {
-      video.muted = false
-      setMuted(false)
-    }
-    void video.play()
-  }
-
-  // Vollbild: von vorne, mit Ton und den nativen Video-Bedienelementen. Beim
-  // Verlassen läuft das Video wieder stumm als Hintergrund weiter.
-  function enterFullscreen() {
-    const video = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null
-    if (!video) return
-    video.currentTime = 0
-    video.muted = false
-    setMuted(false)
-    void video.play()
-    if (video.requestFullscreen) void video.requestFullscreen().catch(() => {})
-    else video.webkitEnterFullscreen?.()
-  }
-
+  // Vollbild verlassen: Loop läuft wieder stumm als Hintergrund.
   useEffect(() => {
-    const video = videoRef.current as (HTMLVideoElement & { webkitendfullscreen?: unknown }) | null
-    if (!video) return
-    function onExit() {
-      if (document.fullscreenElement) return
-      video!.muted = true
-      setMuted(true)
-      void video!.play().catch(() => {})
+    const videos = [loopRef.current, fullRef.current] as ((HTMLVideoElement & { webkitendfullscreen?: unknown }) | null)[]
+    function onChange() {
+      const active = Boolean(document.fullscreenElement)
+      setIsFullscreen(active)
+      if (active) return
+      exitFull()
+      void loopRef.current?.play().catch(() => {})
     }
-    document.addEventListener('fullscreenchange', onExit)
-    video.addEventListener('webkitendfullscreen', onExit)
+    function onWebkitExit() {
+      exitFull()
+      void loopRef.current?.play().catch(() => {})
+    }
+    document.addEventListener('fullscreenchange', onChange)
+    for (const video of videos) video?.addEventListener('webkitendfullscreen', onWebkitExit)
     return () => {
-      document.removeEventListener('fullscreenchange', onExit)
-      video.removeEventListener('webkitendfullscreen', onExit)
+      document.removeEventListener('fullscreenchange', onChange)
+      for (const video of videos) video?.removeEventListener('webkitendfullscreen', onWebkitExit)
     }
   }, [])
 
   function toggleSound() {
-    const video = videoRef.current
-    if (!video) return
-    video.muted = !video.muted
-    setMuted(video.muted)
+    const video = activeVideo()
+    if (video) setSound(video.muted)
   }
 
   function handleMove(e: MouseEvent<HTMLDivElement>) {
@@ -152,6 +210,11 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
     target.current = { x, y }
   }
 
+  const videoClass = fill
+    ? 'absolute left-0 -top-[12%] w-full h-[124%] object-cover will-change-transform [&:fullscreen]:object-contain'
+    : 'block w-full h-auto [&:fullscreen]:object-contain'
+  const videoStyle = fill ? { transform: 'translateY(var(--hero-par, 0px))' } : undefined
+
   return (
     <div
       ref={containerRef}
@@ -164,7 +227,7 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
           toggleSound()
         } else {
           setStarted(true)
-          restart(true)
+          startFull()
         }
       }}
     >
@@ -177,7 +240,8 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
           aria-label="Video im Vollbild abspielen"
           onClick={(e) => {
             e.stopPropagation()
-            enterFullscreen()
+            setStarted(true)
+            startFull({ fullscreen: true })
           }}
           onMouseEnter={() => setOverControls(true)}
           onMouseLeave={() => setOverControls(false)}
@@ -190,7 +254,8 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
           aria-label="Video von vorne starten"
           onClick={(e) => {
             e.stopPropagation()
-            restart(false)
+            setStarted(true)
+            startFull()
           }}
           onMouseEnter={() => setOverControls(true)}
           onMouseLeave={() => setOverControls(false)}
@@ -201,16 +266,41 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
       </div>
 
       <video
-        ref={videoRef}
-        src={src}
+        ref={loopRef}
+        src={loopSrc}
         poster={poster}
-        className={fill ? 'absolute left-0 -top-[12%] w-full h-[124%] object-cover will-change-transform' : 'block w-full h-auto'}
-        style={fill ? { transform: 'translateY(var(--hero-par, 0px))' } : undefined}
+        className={videoClass}
+        style={videoStyle}
         autoPlay
         muted
         loop
         playsInline
+        preload={poster ? 'metadata' : 'auto'}
       />
+
+      {/* Vollversion: lädt nur Metadaten vor, liegt unsichtbar darüber und wird erst beim Start sichtbar. */}
+      {hasFull && (
+        <video
+          ref={fullRef}
+          src={fullSrc}
+          poster={poster}
+          className={`${videoClass} ${mode === 'full' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          style={videoStyle}
+          playsInline
+          preload="metadata"
+          controls={isFullscreen}
+          onEnded={exitFull}
+          onWaiting={() => modeRef.current === 'full' && setBuffering(true)}
+          onPlaying={() => setBuffering(false)}
+          onCanPlay={() => setBuffering(false)}
+        />
+      )}
+
+      {buffering && mode === 'full' && (
+        <div className="absolute inset-0 z-[2] flex items-center justify-center pointer-events-none" aria-label="Video lädt">
+          <span className="video-spinner block w-10 h-10 rounded-full border-2 border-white/30 border-t-white" />
+        </div>
+      )}
 
       {/* Mobil: ein einzelner Play-Knopf in der Mitte, startet das Video mit Ton im Vollbild. */}
       <button
@@ -218,9 +308,11 @@ export function IntroVideo({ src, poster, fill }: { src: string; poster?: string
         aria-label="Video mit Ton im Vollbild abspielen"
         onClick={(e) => {
           e.stopPropagation()
-          enterFullscreen()
+          setStarted(true)
+          startFull({ fullscreen: true })
         }}
         className="sm:hidden absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-[72px] h-[72px] rounded-full bg-[var(--bg)]/90 text-[var(--ink)] backdrop-blur"
+        style={{ opacity: mode === 'full' && !isFullscreen ? 0 : 1, pointerEvents: mode === 'full' ? 'none' : undefined }}
       >
         <span className="scale-[1.6] translate-x-[1px]">
           <PlayIcon />

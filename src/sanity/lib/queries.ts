@@ -40,6 +40,7 @@ export type SiteSettings = {
   printsUrl?: string
   designUrl?: string
   cvUrl?: string
+  availability?: string
   impressumCredits?: { role?: string; name?: string }[]
 }
 
@@ -111,14 +112,15 @@ export type DesignAbout = {
   process?: { title?: string; text?: string }[]
   introText?: string
   introVideoUrl?: string
+  introFullVideoUrl?: string
+  introPosterUrl?: string
   bio?: string
   approach?: string
   services?: string[]
-  clients?: string[]
   industries?: string[]
 }
 
-const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc){
+const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc, _createdAt asc){
   _id, title, "slug": slug.current,
   "images": images[]{ image, isMobileCover, "aspectRatio": image.asset->metadata.dimensions.aspectRatio },
   edition, year, dimensions, medium, status, order
@@ -127,21 +129,21 @@ const artworksQuery = /* groq */ `*[_type == "artwork"] | order(order asc){
 const aboutQuery = /* groq */ `*[_type == "about"][0]{ photo, bio, exhibitions }`
 
 const siteSettingsQuery = /* groq */ `*[_type == "siteSettings"][0]{
-  mailAddress, mailSubject, instagramUrl, printsUrl, designUrl, impressumCredits, "cvUrl": cvFile.asset->url
+  mailAddress, mailSubject, instagramUrl, printsUrl, designUrl, availability, impressumCredits, "cvUrl": cvFile.asset->url
 }`
 
-const designWorksQuery = /* groq */ `*[_type == "designWork"] | order(order asc){
+const designWorksQuery = /* groq */ `*[_type == "designWork"] | order(order asc, _createdAt asc){
   _id, title, "slug": slug.current,
   "images": images[]{ image, isMobileCover, "videoUrl": video.asset->url, "aspectRatio": image.asset->metadata.dimensions.aspectRatio },
   client, "tags": coalesce(tags, select(defined(category) => [category], [])), year, description, challenge, approach, result, role, order
 }`
 
-const designPlayQuery = /* groq */ `*[_type == "designPlay"] | order(order asc){
+const designPlayQuery = /* groq */ `*[_type == "designPlay"] | order(order asc, _createdAt asc){
   _id, title, image, "videoUrl": video.asset->url,
   "aspectRatio": image.asset->metadata.dimensions.aspectRatio
 }`
 
-const designTimelineQuery = /* groq */ `*[_type == "designTimeline"] | order(order asc){
+const designTimelineQuery = /* groq */ `*[_type == "designTimeline"] | order(order asc, _createdAt asc){
   _id, title, text,
   "lanes": lanes[]{
     _key, name, description,
@@ -152,12 +154,12 @@ const designTimelineQuery = /* groq */ `*[_type == "designTimeline"] | order(ord
   }
 }`
 
-const designInterestQuery = /* groq */ `*[_type == "designInterest"] | order(order asc){
+const designInterestQuery = /* groq */ `*[_type == "designInterest"] | order(order asc, _createdAt asc){
   _id, kind, title, artist, year, note, spotifyUrl, image,
   "aspectRatio": image.asset->metadata.dimensions.aspectRatio
 }`
 
-const designAboutQuery = /* groq */ `*[_type == "designAbout"][0]{ artText, spotifyPlaylistUrl, loves, looking, process, introText, "introVideoUrl": introVideo.asset->url, bio, approach, services, clients, industries }`
+const designAboutQuery = /* groq */ `*[_type == "designAbout"][0]{ artText, spotifyPlaylistUrl, loves, looking, process, introText, "introVideoUrl": introVideo.asset->url, "introFullVideoUrl": introFullVideo.asset->url, "introPosterUrl": introPoster.asset->url + "?w=1600&auto=format", bio, approach, services, industries }`
 
 export async function getArtworks(): Promise<Artwork[]> {
   return client.fetch(artworksQuery)

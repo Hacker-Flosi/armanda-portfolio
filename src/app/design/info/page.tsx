@@ -195,10 +195,12 @@ export default async function DesignInfoPage() {
             {about?.looking && (
               <Section id="suche" index={number('suche')} title="Was ich suche">
                 <Text paragraphs={paragraphsOf(about.looking)} links={links} />
-                <Reveal className="reveal-soft inline-flex items-center gap-3 self-start h-9 px-4 rounded-full border border-[var(--ink)]/30 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-[#4fd37a] hero-cue-arrow" aria-hidden />
-                  Verfügbar ab Oktober 2026
-                </Reveal>
+                {(settings?.availability ?? 'Verfügbar Oktober 26') && (
+                  <Reveal className="reveal-soft inline-flex items-center gap-3 self-start h-9 px-4 rounded-full border border-[var(--ink)]/30 text-sm">
+                    <span className="w-2 h-2 rounded-full bg-[#4fd37a] hero-cue-arrow" aria-hidden />
+                    {settings?.availability ?? 'Verfügbar Oktober 26'}
+                  </Reveal>
+                )}
               </Section>
             )}
 

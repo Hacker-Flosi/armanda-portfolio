@@ -370,12 +370,12 @@ html[data-transition='down']::view-transition-new(root) {
 html[data-leaving] .reveal {
   opacity: 0 !important;
   transform: translateY(-32px) !important;
-  transition: opacity 0.3s ease var(--leave-delay, 0s), transform 0.45s cubic-bezier(0.5, 0, 0.75, 0) var(--leave-delay, 0s) !important;
+  transition: opacity 0.2s ease var(--leave-delay, 0s), transform 0.28s cubic-bezier(0.5, 0, 0.75, 0) var(--leave-delay, 0s) !important;
 }
 html[data-leaving] [data-reveal-line] {
   opacity: 0 !important;
   transform: translateY(-115%) !important;
-  transition: transform 0.4s cubic-bezier(0.5, 0, 0.75, 0) var(--leave-delay, 0s), opacity 0.25s ease var(--leave-delay, 0s) !important;
+  transition: transform 0.26s cubic-bezier(0.5, 0, 0.75, 0) var(--leave-delay, 0s), opacity 0.18s ease var(--leave-delay, 0s) !important;
 }
 
 ::view-transition-group(design-header),
@@ -441,5 +441,15 @@ html[data-leaving] [data-reveal-line] {
 @media (prefers-reduced-motion: reduce) {
   .carousel-reveal {
     animation: none;
+  }
+}
+
+.video-spinner {
+  animation: video-spin 0.8s linear infinite;
+}
+
+@keyframes video-spin {
+  to {
+    transform: rotate(360deg);
   }
 }

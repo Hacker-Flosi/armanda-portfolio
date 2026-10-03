@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { nextOrder } from '../lib/nextOrder'
 
 export const designWork = defineType({
   name: 'designWork',
@@ -16,7 +17,7 @@ export const designWork = defineType({
       title: 'Slug',
       type: 'slug',
       options: { source: 'title' },
-      validation: (rule) => rule.required(),
+      hidden: true,
     }),
     defineField({
       name: 'images',
@@ -38,7 +39,7 @@ export const designWork = defineType({
               title: 'Video',
               type: 'file',
               options: { accept: 'video/*' },
-              description: 'Entweder ein Bild ODER ein Video pro Eintrag.',
+              description: 'Entweder ein Bild ODER ein Video pro Eintrag. Video: MP4 (H.264), möglichst unter 20 MB.',
             }),
             defineField({
               name: 'isMobileCover',
@@ -98,6 +99,7 @@ export const designWork = defineType({
       name: 'order',
       title: 'Reihenfolge',
       type: 'number',
+      initialValue: nextOrder('designWork'),
       description: 'Kleinere Zahl erscheint weiter oben in der Liste.',
       validation: (rule) => rule.required(),
     }),

@@ -99,9 +99,9 @@ function isMobileViewport() {
 // Abbau: bevor die Seite wechselt, fahren Fächer und alle Komponenten der
 // Seite nacheinander heraus (von unten nach oben). Erst danach folgt die
 // Navigation; die neue Seite baut sich selbst wieder auf.
-const STAGGER_MS = 45
-const MAX_STAGGER_MS = 320
-const LEAVE_MS = 450
+const STAGGER_MS = 20
+const MAX_STAGGER_MS = 140
+const LEAVE_MS = 280
 
 function dismantlePage() {
   const root = document.documentElement

@@ -50,7 +50,7 @@ export default async function DesignPage() {
       <ResolveFanTransition />
       <DesignHeader />
       <main className="flex-1 bg-[var(--bg)] text-[var(--ink)]">
-        <Hero introText={about?.introText} videoSrc={about?.introVideoUrl} mailHref={mailHref} mailAddress={settings?.mailAddress} />
+        <Hero introText={about?.introText} videoSrc={about?.introVideoUrl} fullVideoSrc={about?.introFullVideoUrl} posterSrc={about?.introPosterUrl} mailHref={mailHref} mailAddress={settings?.mailAddress} />
         <div>
           <DesignProjects works={works} />
           {timelines.map((timeline, i) => (
