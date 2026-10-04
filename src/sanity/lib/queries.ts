@@ -78,7 +78,7 @@ export type DesignWork = {
 export type DesignTimelineItem = {
   _key: string
   title?: string
-  year: number
+  year?: number
   note?: string
   image?: SanityImageSource
   videoUrl?: string

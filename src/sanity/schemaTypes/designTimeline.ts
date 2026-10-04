@@ -40,9 +40,10 @@ export const designTimeline = defineType({
                       name: 'year',
                       title: 'Jahr',
                       type: 'number',
-                      validation: (rule) => rule.required().integer().min(1990).max(2100),
+                      description: 'Optional.',
+                      validation: (rule) => rule.integer().min(1990).max(2100),
                     }),
-                    defineField({ name: 'note', title: 'Kurztext / Idee dahinter', type: 'text', rows: 3 }),
+                    defineField({ name: 'note', title: 'Notiz', type: 'text', rows: 2, description: 'Erscheint direkt am Bild und in der Grossansicht — ersetzt die Jahresangabe.' }),
                     defineField({ name: 'image', title: 'Bild', type: 'image', options: { hotspot: true } }),
                     defineField({
                       name: 'video',
@@ -58,8 +59,8 @@ export const designTimeline = defineType({
                       return item?.image || item?.video ? true : 'Bild oder Video wählen'
                     }),
                   preview: {
-                    select: { title: 'title', year: 'year', media: 'image' },
-                    prepare: ({ title, year, media }) => ({ title: title || 'Arbeit', subtitle: String(year ?? ''), media }),
+                    select: { title: 'title', year: 'year', note: 'note', media: 'image' },
+                    prepare: ({ title, year, note, media }) => ({ title: title || 'Arbeit', subtitle: note || (year ? String(year) : ''), media }),
                   },
                 },
               ],

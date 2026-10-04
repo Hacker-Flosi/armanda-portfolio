@@ -54,7 +54,7 @@ export function playToTiles(items: DesignPlay[]): MediaTile[] {
 export type TimelineItemView = {
   key: string
   title: string
-  year: number
+  year?: number
   note?: string
   kind: 'image' | 'video'
   src: string
@@ -93,7 +93,7 @@ export function timelineToView(timeline: DesignTimeline): TimelineView {
             },
           ]
         })
-        .sort((a, b) => a.year - b.year),
+        .sort((a, b) => (a.year !== undefined && b.year !== undefined ? a.year - b.year : 0)),
     })),
   }
 }
@@ -106,7 +106,7 @@ export function timelineToTiles(view: TimelineView): MediaTile[] {
       src: item.src,
       fullSrc: item.fullSrc,
       aspectRatio: item.aspectRatio,
-      label: `${view.title} · ${lane.name} ${item.year}`,
+      label: [`${view.title} · ${lane.name}`, item.year].filter(Boolean).join(' '),
     }))
   )
 }

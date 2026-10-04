@@ -91,7 +91,7 @@ export function ProjectClusters({ timeline }: { timeline: TimelineView }) {
         <div className="sm:hidden flex-1 min-h-0">
           <MobileProjectCarousel
             key={active.key}
-            items={active.items.map((item) => ({ key: item.key, kind: item.kind, src: item.src, aspectRatio: item.aspectRatio, caption: String(item.year) }))}
+            items={active.items.map((item) => ({ key: item.key, kind: item.kind, src: item.src, aspectRatio: item.aspectRatio, caption: item.note ?? (item.year ? String(item.year) : undefined) }))}
             label={active.name}
             onOpen={setOpen}
           />
@@ -101,7 +101,7 @@ export function ProjectClusters({ timeline }: { timeline: TimelineView }) {
             <button
               key={item.key}
               type="button"
-              aria-label={`${item.title} ${item.year}`}
+              aria-label={[item.title, item.note ?? item.year].filter(Boolean).join(' — ')}
               onClick={() => setOpen(index)}
               className="relative shrink-0 overflow-hidden bg-[var(--ink)]/[0.06] h-[min(100%,calc(88vw/var(--ratio)))] md:h-full group"
               style={{ aspectRatio: item.kind === 'video' ? 16 / 9 : (item.aspectRatio ?? 1.3), ['--ratio' as string]: item.kind === 'video' ? 16 / 9 : (item.aspectRatio ?? 1.3) }}
@@ -118,7 +118,11 @@ export function ProjectClusters({ timeline }: { timeline: TimelineView }) {
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                 />
               )}
-              <span className="absolute left-3 bottom-3 text-xs text-white/80">{item.year}</span>
+              {(item.note || item.year) && (
+                <span className="absolute left-3 bottom-3 right-14 text-xs text-white/90 line-clamp-2 text-left [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">
+                  {item.note ?? item.year}
+                </span>
+              )}
               <EnlargeBadge />
             </button>
           ))}
