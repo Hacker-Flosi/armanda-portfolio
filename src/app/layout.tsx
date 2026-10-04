@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
+import { SmoothScroll } from '@/components/SmoothScroll'
 
 const esRebond = localFont({
   src: './fonts/ESRebondGrotesque-Medium.woff2',
@@ -25,7 +26,10 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         />
         <link rel="preconnect" href="https://cdn.sanity.io" crossOrigin="" />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SmoothScroll />
+        {children}
+      </body>
     </html>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 
 const INTERVAL_MS = 3800
@@ -22,7 +22,16 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
   const pauseRef = useRef<() => void>(() => {})
   const resumeRef = useRef<() => void>(() => {})
   const [inside, setInside] = useState(false)
+  // Wie oft der Inhalt wiederholt wird. Mindestens dreimal; ist der Inhalt
+  // schmal (wenige Kacheln, breiter Bildschirm), entsprechend öfter, damit
+  // der Endlos-Lauf auch dann nie an ein Ende stösst.
+  const [copies, setCopies] = useState(3)
+  const copiesRef = useRef(3)
   const [dragging, setDragging] = useState(false)
+
+  useEffect(() => {
+    copiesRef.current = copies
+  }, [copies])
 
   // Cursor-Badge folgt der Maus weich.
   useEffect(() => {
@@ -36,6 +45,62 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
+  }, [])
+
+  // Horizontaler Parallax (Desktop): das Medium in jeder Kachel ist grösser
+  // als die Kachel und gleitet beim Durchfahren gegen die Laufrichtung, also
+  // langsamer als der Rahmen. Das Hover-Zoomen der Medien bleibt erhalten.
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    const mq = window.matchMedia('(min-width: 768px) and (hover: hover) and (prefers-reduced-motion: no-preference)')
+    if (!mq.matches) return
+    const media = new Map<Element, HTMLElement | null>()
+    let frame = 0
+
+    function update() {
+      frame = 0
+      const box = scroller!.getBoundingClientRect()
+      const center = box.left + box.width / 2
+      for (const child of Array.from(scroller!.children)) {
+        const rect = child.getBoundingClientRect()
+        if (rect.right < box.left - 80 || rect.left > box.right + 80) continue
+        let el = media.get(child)
+        if (el === undefined) {
+          el = child.querySelector<HTMLElement>('img, video')
+          // Nur die Transform-Eigenschaft übergangslos animieren; der
+          // Hover-Zoom (scale) behält seine weiche Transition.
+          if (el) el.style.transition = 'scale 0.7s cubic-bezier(0.16, 1, 0.3, 1)'
+          media.set(child, el)
+        }
+        if (!el) continue
+        const progress = (rect.left + rect.width / 2 - center) / (box.width / 2 + rect.width / 2)
+        const shift = -Math.max(-1, Math.min(1, progress)) * rect.width * 0.1
+        el.style.transform = `translate3d(${shift.toFixed(1)}px, 0, 0) scale(1.22)`
+      }
+    }
+    function schedule() {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+
+    update()
+    scroller.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    // Medien laden später und ändern die Kachelbreite: nachziehen.
+    const observer = new ResizeObserver(schedule)
+    observer.observe(scroller)
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      scroller.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      observer.disconnect()
+      for (const el of media.values()) {
+        if (el) {
+          el.style.transform = ''
+          el.style.transition = ''
+        }
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -52,9 +117,9 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
     // [S, 2S): verlässt die Position ihn, wird sie unsichtbar um S verschoben.
     const loopWidth = () => {
       const items = scroller.children
-      const third = items.length / 3
-      const width = (items[third] as HTMLElement).offsetLeft
-      return width > scroller.clientWidth + 4 ? width : 0
+      const single = items.length / copiesRef.current
+      const width = (items[single] as HTMLElement).offsetLeft
+      return width > 8 ? width : 0
     }
     // Gibt die vorgenommene Verschiebung zurück (0, +S oder -S).
     const normalize = () => {
@@ -71,6 +136,19 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
       return 0
     }
     normalizeRef.current = normalize
+
+    // Genügend Wiederholungen für die aktuelle Breite sicherstellen.
+    function ensureCopies() {
+      const items = scroller!.children
+      const single = items.length / copiesRef.current
+      const width = (items[single] as HTMLElement | undefined)?.offsetLeft ?? 0
+      if (width <= 0) return
+      const needed = Math.max(3, Math.ceil(2 + scroller!.clientWidth / width))
+      if (needed !== copiesRef.current) setCopies(needed)
+    }
+    ensureCopies()
+    const sizeObserver = new ResizeObserver(ensureCopies)
+    sizeObserver.observe(scroller)
     const onScroll = () => {
       window.clearTimeout(settleTimer)
       settleTimer = window.setTimeout(normalize, 120)
@@ -117,6 +195,7 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
       window.clearTimeout(resumeTimer)
       window.clearTimeout(settleTimer)
       observer.disconnect()
+      sizeObserver.disconnect()
       scroller.removeEventListener('scroll', onScroll)
       scroller.removeEventListener('pointerenter', pause)
       scroller.removeEventListener('pointerleave', resumeSoon)
@@ -125,6 +204,10 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
       scroller.removeEventListener('wheel', pause)
     }
   }, [])
+
+  useEffect(() => {
+    normalizeRef.current()
+  }, [copies])
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     if (e.pointerType !== 'mouse' || e.button !== 0 || !scrollerRef.current) return
@@ -222,9 +305,9 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
         onDragStart={(e) => e.preventDefault()}
         className="flex items-center md:items-stretch gap-0.5 h-full overflow-x-auto overscroll-x-contain select-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [@media(hover:hover)]:cursor-none"
       >
-        {children}
-        {children}
-        {children}
+        {Array.from({ length: copies }, (_, i) => (
+          <Fragment key={i}>{children}</Fragment>
+        ))}
       </div>
 
       <div ref={badgeRef} aria-hidden className="hidden [@media(hover:hover)]:block absolute top-0 left-0 z-10 pointer-events-none">
