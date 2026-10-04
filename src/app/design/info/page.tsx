@@ -115,7 +115,7 @@ export default async function DesignInfoPage() {
       aspectRatio: item.aspectRatio,
     }))
   const recordDocs = interests.filter((item) => item.kind === 'platte' && (item.image || item.spotifyUrl))
-  const spotifyMeta = await Promise.all(recordDocs.map((item) => (item.image ? null : getSpotifyMeta(item.spotifyUrl))))
+  const spotifyMeta = await Promise.all(recordDocs.map((item) => (item.image && item.title && item.artist ? null : getSpotifyMeta(item.spotifyUrl))))
   const records = recordDocs.flatMap((item, i) => {
     const meta = spotifyMeta[i]
     const src = item.image
@@ -126,7 +126,7 @@ export default async function DesignInfoPage() {
       {
         key: item._id,
         title: item.title || meta?.title || 'Platte',
-        artist: item.artist,
+        artist: item.artist || meta?.artist,
         year: item.year,
         note: item.note,
         spotifyUrl: item.spotifyUrl,

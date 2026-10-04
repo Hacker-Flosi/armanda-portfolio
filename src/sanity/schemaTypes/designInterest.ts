@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity'
 import { nextOrder } from '../lib/nextOrder'
+import { SpotifyUrlInput } from '../components/SpotifyUrlInput'
 
 export const designInterest = defineType({
   name: 'designInterest',
@@ -32,8 +33,9 @@ export const designInterest = defineType({
       name: 'spotifyUrl',
       title: 'Spotify-Link (Album, nur Platten)',
       type: 'url',
+      components: { input: SpotifyUrlInput },
       description:
-        'In Spotify: Album öffnen → "..." → Teilen → "Album-Link kopieren". Beim Aufziehen der Platte erscheint dann der Spotify-Player.',
+        'In Spotify: Album öffnen → "..." → Teilen → "Album-Link kopieren". Titel, Interpret und Cover werden automatisch geholt. Nur das Jahr trägst du bei Bedarf selbst ein.',
     }),
     defineField({
       name: 'note',
