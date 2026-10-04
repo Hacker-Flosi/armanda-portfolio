@@ -290,11 +290,29 @@ export function RecordCrate({ records }: { records: RecordItem[] }) {
         })}
       </div>
 
+      <div key={current.key} className="archive-tile flex flex-col items-center gap-1 max-w-2xl mx-auto text-center">
+        {current.note && (
+          <p className="mb-5 text-xl leading-snug" style={{ textWrap: 'balance' }}>
+            «{current.note}»
+          </p>
+        )}
+        <span className="flex items-center justify-center gap-4 font-medium" style={{ fontSize: 'clamp(1.5rem, 1rem + 2vw, 2.75rem)', letterSpacing: '-0.03em' }}>
+          {current.title}
+          {playing && (
+            <span aria-hidden className="flex items-end gap-[3px] h-5">
+              {[0, 1, 2, 3].map((bar) => (
+                <span key={bar} className="eq-bar w-[3px] bg-current rounded-full" style={{ animationDelay: `${bar * 0.18}s` }} />
+              ))}
+            </span>
+          )}
+        </span>
+        <span className="text-[var(--ink-muted)]">{[current.artist, current.year].filter(Boolean).join(' · ')}</span>
+      </div>
+
       {currentUri && (
-        <div className="flex flex-col gap-3 max-w-xl">
-          {!playing && <span className="text-sm text-[var(--ink-muted)]">Platte anklicken — sie wird aufgelegt und der Track startet.</span>}
+        <div className="flex flex-col items-center gap-3 w-full max-w-xl mx-auto">
           {playing && needsTap && (
-            <span className="archive-tile inline-flex items-center gap-2 self-start h-9 px-4 rounded-full bg-[var(--ink)] text-[var(--bg)] text-sm font-medium">
+            <span className="archive-tile inline-flex items-center gap-2 h-9 px-4 rounded-full bg-[var(--ink)] text-[var(--bg)] text-sm font-medium">
               Tippe im Player auf ▶, damit der Track startet
             </span>
           )}
@@ -309,34 +327,11 @@ export function RecordCrate({ records }: { records: RecordItem[] }) {
               className="rounded-xl border-0"
             />
           )}
-          <span className="text-xs text-[var(--ink-muted)]">
-            {playing && 'Beim Laden werden Daten an Spotify übertragen. '}
-            <a href={current.spotifyUrl} target="_blank" rel="noreferrer" className="underline underline-offset-4">
-              In Spotify öffnen ↗
-            </a>
-          </span>
+          <a href={current.spotifyUrl} target="_blank" rel="noreferrer" className="text-xs text-[var(--ink-muted)] underline underline-offset-4">
+            In Spotify öffnen ↗
+          </a>
         </div>
       )}
-
-      <div key={current.key} className="archive-tile flex flex-wrap items-end justify-between gap-x-10 gap-y-3 max-w-4xl">
-        <div className="flex flex-col gap-1">
-          <span className="flex items-center gap-4 font-medium" style={{ fontSize: 'clamp(1.5rem, 1rem + 2vw, 2.75rem)', letterSpacing: '-0.03em' }}>
-            {current.title}
-            {playing && (
-              <span aria-hidden className="flex items-end gap-[3px] h-5">
-                {[0, 1, 2, 3].map((bar) => (
-                  <span key={bar} className="eq-bar w-[3px] bg-current rounded-full" style={{ animationDelay: `${bar * 0.18}s` }} />
-                ))}
-              </span>
-            )}
-          </span>
-          <span className="text-[var(--ink-muted)]">{[current.artist, current.year].filter(Boolean).join(' · ')}</span>
-        </div>
-        {current.note && <p className="max-w-md text-sm text-[var(--ink-muted)]">{current.note}</p>}
-        <span className="text-xs text-[var(--ink-muted)]">
-          {active + 1} / {records.length} · ziehen, scrollen oder anklicken
-        </span>
-      </div>
     </div>
   )
 }
