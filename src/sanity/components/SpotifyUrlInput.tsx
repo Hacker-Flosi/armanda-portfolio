@@ -13,6 +13,7 @@ export function SpotifyUrlInput(props: StringInputProps) {
   const publishedId = rawId.replace(/^drafts\./, '')
   const title = useFormValue(['title']) as string | undefined
   const artist = useFormValue(['artist']) as string | undefined
+  const storedCover = useFormValue(['spotifyCover']) as string | undefined
   const { patch } = useDocumentOperation(publishedId, 'designInterest')
   const isSpotifyUrl = /open\.spotify\.com\//.test(url)
   const [fetched, setMeta] = useState<Meta | null>(null)
@@ -50,6 +51,7 @@ export function SpotifyUrlInput(props: StringInputProps) {
     const set: Record<string, string> = {}
     if (!title && meta.title) set.title = meta.title
     if (!artist && meta.artist) set.artist = meta.artist
+    if (meta.cover && meta.cover !== storedCover) set.spotifyCover = meta.cover
     if (Object.keys(set).length > 0) patch.execute([{ set }])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meta])

@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import { defineField, defineType } from 'sanity'
 import { nextOrder } from '../lib/nextOrder'
 import { SpotifyUrlInput } from '../components/SpotifyUrlInput'
@@ -52,6 +53,7 @@ export const designInterest = defineType({
       description:
         'Bei Platten mit Spotify-Link kann das leer bleiben: dann wird das Cover automatisch von Spotify geholt.',
     }),
+    defineField({ name: 'spotifyCover', title: 'Spotify-Cover (automatisch)', type: 'string', hidden: true, readOnly: true }),
     defineField({ name: 'order', title: 'Reihenfolge', type: 'number',
       description: 'Wird bei neuen Einträgen automatisch ans Ende gesetzt. Kleinere Zahl erscheint weiter oben.',
       initialValue: nextOrder('designInterest'), validation: (rule) => rule.required() }),
@@ -62,5 +64,13 @@ export const designInterest = defineType({
       const doc = value as { image?: unknown; spotifyUrl?: unknown } | undefined
       return doc?.image || doc?.spotifyUrl ? true : 'Bild hochladen oder (bei Platten) einen Spotify-Link angeben'
     }),
-  preview: { select: { title: 'title', subtitle: 'kind', media: 'image' } },
+  preview: {
+    select: { title: 'title', artist: 'artist', year: 'year', kind: 'kind', media: 'image', cover: 'spotifyCover' },
+    prepare: ({ title, artist, year, kind, media, cover }) => ({
+      title: title || (kind === 'platte' ? 'Platte (ohne Titel)' : 'Foto (ohne Titel)'),
+      subtitle: kind === 'platte' ? ['Platte', artist, year].filter(Boolean).join(' · ') : 'Privates Foto',
+      // Ohne eigenes Bild: das von Spotify geholte Cover anzeigen.
+      media: media ?? (cover ? createElement('img', { src: cover, alt: '', style: { width: '100%', height: '100%', objectFit: 'cover' } }) : undefined),
+    }),
+  },
 })
