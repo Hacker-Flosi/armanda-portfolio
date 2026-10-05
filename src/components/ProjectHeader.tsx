@@ -14,6 +14,7 @@ export function ProjectHeader({
   approach,
   result,
   role,
+  labels,
 }: {
   title: string
   tags: string[]
@@ -24,12 +25,13 @@ export function ProjectHeader({
   approach?: string
   result?: string
   role?: string
+  labels?: { challenge?: string; approach?: string; result?: string }
 }) {
   const [open, setOpen] = useState(false)
   const caseStudy = [
-    { label: 'Aufgabe', text: challenge },
-    { label: 'Vorgehen', text: approach },
-    { label: 'Ergebnis', text: result },
+    { label: labels?.challenge ?? 'Aufgabe', text: challenge },
+    { label: labels?.approach ?? 'Vorgehen', text: approach },
+    { label: labels?.result ?? 'Ergebnis', text: result },
     { label: 'Rolle', text: role },
     { label: 'Jahr', text: year },
   ].filter((entry) => entry.text)

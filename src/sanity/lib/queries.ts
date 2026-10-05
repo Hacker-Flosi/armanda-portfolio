@@ -192,3 +192,34 @@ export async function getDesignTimelines(): Promise<DesignTimeline[]> {
 export async function getDesignInterests(): Promise<DesignInterest[]> {
   return client.fetch(designInterestQuery)
 }
+
+export type IllustrationPage = {
+  heroTitle?: string
+  heroText?: string
+  handworkTitle?: string
+  handworkText?: string
+  handworkSteps?: { _key: string; title?: string; text?: string; image?: SanityImageSource }[]
+  benefits?: { _key: string; figure?: string; title?: string; text?: string }[]
+  casesIntro?: string
+  cases?: { _key: string; title?: string; client?: string; tags?: string[]; topic?: string; idea?: string; outcome?: string; images?: { _key: string; asset?: unknown; aspectRatio?: number | null; image: SanityImageSource }[] }[]
+  testimonials?: { _key: string; quote?: string; name?: string; role?: string }[]
+  configImages?: { _key: string; option?: string; image?: SanityImageSource }[]
+  process?: { _key: string; title?: string; text?: string; duration?: string; imageUrl?: string; videoUrl?: string }[]
+  faq?: { _key: string; question?: string; answer?: string }[]
+}
+
+const illustrationPageQuery = /* groq */ `*[_type == "illustrationPage"][0]{
+  heroTitle, heroText, handworkTitle, handworkText,
+  handworkSteps[]{ _key, title, text, image },
+  benefits[]{ _key, figure, title, text },
+  casesIntro,
+  cases[]{ _key, title, client, tags, topic, idea, outcome, "images": images[]{ _key, "image": @, "aspectRatio": asset->metadata.dimensions.aspectRatio } },
+  testimonials[]{ _key, quote, name, role },
+  configImages[]{ _key, option, image },
+  process[]{ _key, title, text, duration, "imageUrl": image.asset->url + "?w=900&auto=format", "videoUrl": video.asset->url },
+  faq[]{ _key, question, answer }
+}`
+
+export async function getIllustrationPage(): Promise<IllustrationPage | null> {
+  return client.fetch(illustrationPageQuery)
+}

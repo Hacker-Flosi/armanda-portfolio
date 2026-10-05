@@ -6,5 +6,6 @@ import { designAbout } from './designAbout'
 import { designPlay } from './designPlay'
 import { designTimeline } from './designTimeline'
 import { designInterest } from './designInterest'
+import { illustrationPage } from './illustrationPage'
 
-export const schemaTypes = [artwork, about, siteSettings, designWork, designAbout, designPlay, designTimeline, designInterest]
+export const schemaTypes = [artwork, about, siteSettings, designWork, designAbout, designPlay, designTimeline, designInterest, illustrationPage]

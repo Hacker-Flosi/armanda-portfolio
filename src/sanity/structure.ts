@@ -34,6 +34,11 @@ export const structure: StructureResolver = (S) =>
         .child(S.documentTypeList('designInterest').title('Fotos & Platten').defaultOrdering(byOrder)),
       S.divider(),
       S.listItem()
+        .title('Illustration — Seite (Auftragsseite)')
+        .id('illustrationPage-singleton')
+        .child(S.document().schemaType('illustrationPage').documentId('illustrationPage')),
+      S.divider(),
+      S.listItem()
         .title('Site-Einstellungen')
         .id('siteSettings-singleton')
         .child(S.document().schemaType('siteSettings').documentId('siteSettings-singleton')),

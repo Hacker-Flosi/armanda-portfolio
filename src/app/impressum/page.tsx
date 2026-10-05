@@ -27,6 +27,12 @@ export default async function ImpressumPage() {
             {settings?.designUrl ?? '/design'}
           </Link>
         </Reveal>
+        <Reveal className="reveal-soft text-base">
+          Illustration beauftragen:{' '}
+          <Link href="/illustration" className="underline">
+            /illustration
+          </Link>
+        </Reveal>
       </main>
       <SiteFooter />
     </>
