@@ -106,6 +106,7 @@ export function CvGate() {
     <div
       role="dialog"
       aria-modal
+      data-lenis-prevent
       aria-label="Mein Lebenslauf — Passwort"
       onClick={close}
       className={`fixed inset-0 z-[110] flex items-center justify-center p-4 bg-[#0a0a0a]/90 backdrop-blur text-[#f1f0eb] ${closing ? 'archive-overlay-out' : 'archive-overlay-in'}`}

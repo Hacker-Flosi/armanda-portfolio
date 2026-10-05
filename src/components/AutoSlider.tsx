@@ -27,7 +27,7 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
   // der Endlos-Lauf auch dann nie an ein Ende stösst.
   const [copies, setCopies] = useState(3)
   const copiesRef = useRef(3)
-  const [dragging, setDragging] = useState(false)
+  const [pressed, setPressed] = useState(false)
 
   useEffect(() => {
     copiesRef.current = copies
@@ -214,6 +214,7 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
     cancelAnimationFrame(inertiaFrame.current)
     drag.current = { x: e.clientX, left: scrollerRef.current.scrollLeft, moved: false, samples: [] }
     suppressClick.current = false
+    setPressed(true)
     pauseRef.current()
 
     function onMove(ev: PointerEvent) {
@@ -224,7 +225,6 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
       if (!state.moved && Math.abs(dx) > 5) {
         state.moved = true
         suppressClick.current = true
-        setDragging(true)
       }
       if (state.moved) {
         scroller.scrollLeft = state.left - dx
@@ -237,9 +237,10 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
     function onUp() {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
       const state = drag.current
       drag.current = null
-      setDragging(false)
+      setPressed(false)
 
       // Schwung: Geschwindigkeit der letzten ~100 ms weiterlaufen lassen und
       // sanft abbremsen.
@@ -268,6 +269,7 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
     }
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
   }
 
   function onPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
@@ -303,6 +305,7 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
         onPointerDown={onPointerDown}
         onClickCapture={onClickCapture}
         onDragStart={(e) => e.preventDefault()}
+        style={{ scale: pressed ? 0.992 : 1, transition: pressed ? 'scale 0.2s ease-out' : 'scale 0.6s cubic-bezier(0.34, 1.4, 0.5, 1)' }}
         className="flex items-center md:items-stretch gap-0.5 h-full overflow-x-auto overscroll-x-contain select-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [@media(hover:hover)]:cursor-none"
       >
         {Array.from({ length: copies }, (_, i) => (
@@ -312,12 +315,23 @@ export function AutoSlider({ children, className }: { children: ReactNode; class
 
       <div ref={badgeRef} aria-hidden className="hidden [@media(hover:hover)]:block absolute top-0 left-0 z-10 pointer-events-none">
         <div
-          className="-translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-1 w-[72px] h-[72px] rounded-full bg-[var(--ink)] text-[var(--bg)] text-xs font-medium transition-[opacity,transform] duration-300 ease-out"
-          style={{ opacity: inside ? 1 : 0, transform: `scale(${inside ? (dragging ? 0.82 : 1) : 0.5})` }}
+          className="-translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-1 w-[72px] h-[72px] rounded-full text-xs font-medium"
+          style={{
+            opacity: inside ? 1 : 0,
+            // Gedrückt: zieht sich zusammen und kehrt (beim Loslassen) mit
+            // leichtem Überschwingen zurück.
+            transform: `scale(${!inside ? 0.5 : pressed ? 0.78 : 1})`,
+            background: pressed ? 'var(--bg)' : 'var(--ink)',
+            color: pressed ? 'var(--ink)' : 'var(--bg)',
+            boxShadow: pressed ? 'inset 0 0 0 1.5px var(--ink)' : 'none',
+            transition: pressed
+              ? 'transform 0.18s ease-out, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, opacity 0.3s ease-out'
+              : 'transform 0.55s cubic-bezier(0.34, 1.7, 0.5, 1), background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease-out',
+          }}
         >
-          <span>←</span>
+          <span style={{ display: 'inline-block', transform: pressed ? 'translateX(3px)' : 'none', transition: 'transform 0.35s cubic-bezier(0.34, 1.7, 0.5, 1)' }}>←</span>
           <span>Drag</span>
-          <span>→</span>
+          <span style={{ display: 'inline-block', transform: pressed ? 'translateX(-3px)' : 'none', transition: 'transform 0.35s cubic-bezier(0.34, 1.7, 0.5, 1)' }}>→</span>
         </div>
       </div>
     </div>

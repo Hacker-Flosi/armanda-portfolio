@@ -33,6 +33,34 @@ export function SeriesDetail({
   const item = items[index]
   const touchStart = useRef<{ x: number; y: number } | null>(null)
 
+  // Klick neben dem Medium (auf dem freien Hintergrund) schliesst die Ansicht;
+  // Klicks auf das Medium selbst und auf die Pfeile nicht. Das Medium füllt
+  // seinen Rahmen mit object-contain, deshalb wird sein tatsächlich sichtbarer
+  // Bereich aus Rahmen und Seitenverhältnis berechnet.
+  function onStageClick(e: React.MouseEvent<HTMLDivElement>) {
+    if ((e.target as HTMLElement).closest('button')) {
+      e.stopPropagation()
+      return
+    }
+    const media = e.currentTarget.querySelector<HTMLImageElement | HTMLVideoElement>('img, video')
+    if (!media) return
+    const naturalW = media instanceof HTMLVideoElement ? media.videoWidth : media.naturalWidth
+    const naturalH = media instanceof HTMLVideoElement ? media.videoHeight : media.naturalHeight
+    const box = media.getBoundingClientRect()
+    if (!naturalW || !naturalH || !box.width || !box.height) {
+      e.stopPropagation()
+      return
+    }
+    const scale = Math.min(box.width / naturalW, box.height / naturalH)
+    const w = naturalW * scale
+    const h = naturalH * scale
+    const left = box.left + (box.width - w) / 2
+    const top = box.top + (box.height - h) / 2
+    const inside = e.clientX >= left && e.clientX <= left + w && e.clientY >= top && e.clientY <= top + h
+    if (inside) e.stopPropagation()
+    // Außerhalb: Klick steigt zum Hintergrund auf und schliesst.
+  }
+
   function onTouchStart(e: TouchEvent) {
     const t = e.touches[0]
     touchStart.current = { x: t.clientX, y: t.clientY }
@@ -72,6 +100,7 @@ export function SeriesDetail({
     <div
       role="dialog"
       aria-modal
+      data-lenis-prevent
       aria-label={item.title}
       className={`fixed inset-0 z-50 flex flex-col bg-[#0a0a0a]/95 text-[#f1f0eb] backdrop-blur ${closing ? 'archive-overlay-out' : 'archive-overlay-in'}`}
       onClick={close}
@@ -87,7 +116,7 @@ export function SeriesDetail({
         </button>
       </div>
 
-      <div className="relative flex-1 min-h-0 px-4" onClick={(e) => e.stopPropagation()}>
+      <div className="relative flex-1 min-h-0 px-4" onClick={onStageClick}>
         <div key={item.key} className="archive-tile absolute inset-x-4 inset-y-0">
           {item.kind === 'video' ? (
             <video src={item.src} className="w-full h-full object-contain" autoPlay muted loop playsInline controls />
